@@ -1,4 +1,4 @@
-import { generateFilePath } from '../util';
+import { generateFilePath } from '../util/build';
 import { argv } from '../argv';
 import { IEntryOption } from '../interfaces/entry-option';
 

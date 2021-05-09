@@ -1,16 +1,13 @@
-import { generateFilePath } from '../util/build';
-import { argv } from '../argv';
 import { IEntryOption } from '../interfaces/entry-option';
 
-const input = generateFilePath(argv.input, argv.inputPrefix);
-
+const input = 'index.ts';
 /**
  * 默认所有允许的entry
  */
 export const entries: IEntryOption[] = [
   {
     input,
-    file: generateFilePath('index.esm.browser.js', argv.outPrefix),
+    file: 'index.esm.browser.js',
     format: 'es',
     browser: true,
     transpile: false,
@@ -18,7 +15,7 @@ export const entries: IEntryOption[] = [
   },
   {
     input,
-    file: generateFilePath('index.esm.browser.min.js', argv.outPrefix),
+    file: 'index.esm.browser.min.js',
     format: 'es',
     browser: true,
     transpile: false,
@@ -26,11 +23,11 @@ export const entries: IEntryOption[] = [
     env: 'production',
   },
   // todo remove transpile
-  { input, file: generateFilePath('index.esm.js', argv.outPrefix), format: 'es', transpile: false, env: 'development' },
-  { input, file: generateFilePath('index.js', argv.outPrefix), format: 'umd', transpile: false, env: 'development' },
+  { input, file: 'index.esm.js', format: 'es', transpile: false, env: 'development' },
+  { input, file: 'index.js', format: 'umd', transpile: false, env: 'development' },
   {
     input,
-    file: generateFilePath('index.min.js', argv.outPrefix),
+    file: 'index.min.js',
     format: 'umd',
     transpile: false,
     minify: true,
@@ -38,7 +35,7 @@ export const entries: IEntryOption[] = [
   },
   {
     input,
-    file: generateFilePath('index.common.js', argv.generateFilePath),
+    file: 'index.common.js',
     format: 'cjs',
     transpile: false,
     env: 'development',

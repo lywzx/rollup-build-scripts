@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "es5",
     "module": "CommonJS",
-    "outDir": "dist",
+    "outDir": "../pdd-node-sdk/node_modules/@lywzx/rollup-build-scripts",
     "declaration": true,
     "strict": true,
     "allowSyntheticDefaultImports": true,

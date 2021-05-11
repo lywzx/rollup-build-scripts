@@ -1,9 +1,9 @@
 import { readdirSync } from 'fs';
 import { join } from 'path';
-import { IPackageConfig, IRollupConfig } from '../interfaces/package-option';
+import { IPackageConfig, IRollupConfig, IEntryOption } from '../interfaces';
 import { isFile } from './dir';
 import { readFileSync } from 'fs';
-import { flatten, isFunction } from 'lodash';
+import { flatten, isFunction, isString, groupBy, find, mapValues, sortBy, last, pickBy } from 'lodash';
 import { entries } from '../constant';
 import { generateRollupConfig } from './build';
 
@@ -78,13 +78,56 @@ export function getAllowPackages(options: IPackageConfig[], config: IRollupConfi
 export function getAllPackagesEntry(packages: IPackageConfig[], option: IRollupConfig) {
   return flatten(
     getAllowPackages(packages, option).map((pkg) => {
-      return entries
+      const availableEntries = entries
         .filter((it) => {
           return isFunction(option.onlyEntry) && option.onlyEntry(it, pkg);
-        })
-        .map((entry, index) => {
-          return generateRollupConfig(pkg, entry, option, packages, true);
+        });
+      return availableEntries.map((entry, index) => {
+          return generateRollupConfig(pkg, entry, option, packages, availableEntries, index === 0);
         });
     })
   );
+}
+
+/**
+ * 生成entry所使用的
+ */
+export function generatePackageOutput(entries: IEntryOption[]): Record<string, string> {
+
+  const groupByEntries = mapValues(groupBy(entries, 'format'), (values) => {
+    return sortBy(values, (v) => {
+      return {
+        'production': 1,
+        'development': 0,
+      }[v.env] ?? 2;
+    });
+  });
+  let main: string | undefined, module: string | undefined, unpkg: string | undefined, jsdelivr: string | undefined, browser: string | undefined;
+  if (groupByEntries.cjs) {
+    main = groupByEntries.cjs[0].file;
+  }
+  if (groupByEntries.es) {
+    const el = find(groupByEntries.esm, it => !it.browser);
+    module = el?.file;
+  }
+  if (groupByEntries.es) {
+    const el = find(groupByEntries.esm, it => !!it.browser);
+    browser = el?.file;
+  }
+  if (groupByEntries.umd) {
+    unpkg = last(groupByEntries.umd)?.file;
+    jsdelivr = last(groupByEntries.umd)?.file;
+  }
+
+  if (!main) {
+    main = find([module, browser, unpkg], (it) => !!it);
+  }
+
+  return pickBy({
+    main,
+    module,
+    browser,
+    jsdelivr,
+    unpkg,
+  }, isString);
 }

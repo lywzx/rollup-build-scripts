@@ -3,11 +3,11 @@ import { readFileSync } from 'fs';
 import { gzipSync } from 'zlib';
 import { compress } from 'brotli';
 import { gray, bold } from 'chalk';
-import { ExternalOption, OutputOptions, RollupOptions } from 'rollup';
-import { camelCase, isFunction, template, last, isObject, isArray, isString, isRegExp } from 'lodash';
+import { ExternalOption, GlobalsOption, OutputOptions, RollupOptions } from 'rollup';
+import { camelCase, isFunction, template, last, isObject, isArray, isString, isRegExp, mapValues } from 'lodash';
 import lazy from 'import-lazy';
-import { IPackageConfig, IRollupConfig, IRollupConfigEntryFilter } from '../interfaces/package-option';
-import { IEntryOption } from '../interfaces/entry-option';
+import { IPackageConfig, IRollupConfig, IRollupConfigEntryFilter, IEntryOption } from '../interfaces';
+import { generatePackageOutput } from './pkgs';
 
 const importLazy = lazy(require);
 const rollupTypescript = importLazy('rollup-plugin-typescript2');
@@ -72,12 +72,15 @@ export function filterEntryByRollupConfigEntryFilter(
  * @param entry
  * @param option
  * @param packages
+ * @param entries
+ * @param init
  */
 export function generateRollupConfig(
   pkg: IPackageConfig,
   entry: IEntryOption,
   option: IRollupConfig,
   packages: IPackageConfig[],
+  entries: IEntryOption[],
   // 是否是某个包首次构建
   init: boolean
 ): RollupOptions {
@@ -110,6 +113,10 @@ export function generateRollupConfig(
     ) {
       config.external = option.external;
     }
+  }
+
+  if (option.outputGlobals) {
+    (config.output as OutputOptions).globals = (option.outputGlobals as Record<string, GlobalsOption>)[pkg.packageConfig.name as string] ?? option.outputGlobals;
   }
 
   if (option.externalEachOther && (!config.external || isArray(config.external))) {
@@ -173,14 +180,25 @@ export function generateRollupConfig(
   }
 
   if (init) {
+    const options = [
+      {
+        src: join(pkg.fullPath, 'package.json'),
+        dest: join(pkg.fullPath, option.outPrefix ?? ''),
+        transform: (contents: string, filename: string) => {
+          const pkgConfig = JSON.parse(contents.toString());
+          const override = mapValues(generatePackageOutput(entries), (p) => {
+            return join(option.outPrefix ?? '', p);
+          });
+          return JSON.stringify({
+            ...pkgConfig,
+            ...override,
+          }, null, 2);
+        }
+      },
+    ]
     config.plugins?.push(
       copy({
-        targets: [
-          {
-            src: join(pkg.fullPath, 'package.json'),
-            dest: join(pkg.fullPath, option.outPrefix ?? ''),
-          },
-        ],
+        targets: options,
       })
     );
   }

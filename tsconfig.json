@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "es5",
     "module": "CommonJS",
-    "outDir": "../../company-project/servkit/node_modules/@lywzx/rollup-build-scripts",
+    "outDir": "dist",
     "declaration": true,
     "strict": true,
     "allowSyntheticDefaultImports": true,

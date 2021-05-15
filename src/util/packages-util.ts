@@ -1,3 +1,4 @@
+import del from 'del';
 import { readdirSync } from 'fs';
 import { join } from 'path';
 import { IPackageConfig, IRollupConfig, IEntryOption } from '../interfaces';
@@ -5,13 +6,13 @@ import { isFile } from './dir';
 import { readFileSync } from 'fs';
 import { flatten, isFunction, isString, groupBy, find, mapValues, sortBy, last, pickBy } from 'lodash';
 import { entries } from '../constant';
-import { generateRollupConfig } from './build';
+import { generateOutputPackagePath, generateRollupConfig, generateRollupDtsConfig } from './rollup-util';
 
 /**
  * 获取所有的包内容
  */
 export function getAllPackages(options: IRollupConfig): IPackageConfig[] {
-  if (options.workspace) {
+  if (options.workspace && options.workspace.length) {
     return flatten(
       options.workspace.map((w: string) => {
         return readdirSync(w)
@@ -71,47 +72,75 @@ export function getAllowPackages(options: IPackageConfig[], config: IRollupConfi
 }
 
 /**
+ * 获取所有构建后的entries
+ * @param pkg
+ * @param entry
+ * @param option
+ */
+export function packageOnlyEntryFilter(pkg: IPackageConfig, entry: IEntryOption, option: IRollupConfig) {
+  return isFunction(option.onlyEntry) && option.onlyEntry(entry, pkg);
+}
+
+/**
  * 根据包名，及所有配置，生成包的内容
  * @param packages
  * @param option
  */
-export function getAllPackagesEntry(packages: IPackageConfig[], option: IRollupConfig) {
+export function getAllPackagesRollupEntry(packages: IPackageConfig[], option: IRollupConfig) {
   return flatten(
     getAllowPackages(packages, option).map((pkg) => {
-      const availableEntries = entries
-        .filter((it) => {
-          return isFunction(option.onlyEntry) && option.onlyEntry(it, pkg);
+      const availableEntries = entries(option.ts).filter((it) => {
+        return packageOnlyEntryFilter(pkg, it, option);
+      });
+
+      // 构建代码的entry
+      const buildEntry = availableEntries.map((entry, index) => {
+        return generateRollupConfig(pkg, entry, option, {
+          packages,
+          entries: availableEntries,
+          isFirst: index === 0,
+          isLast: index === availableEntries.length - 1,
+          index,
         });
-      return availableEntries.map((entry, index) => {
-          return generateRollupConfig(pkg, entry, option, packages, availableEntries, index === 0);
-        });
+      });
+
+      // dts入口
+      const dtsEntry = generateRollupDtsConfig(pkg, availableEntries, option);
+
+      return [...buildEntry, ...dtsEntry];
     })
   );
 }
 
 /**
- * 生成entry所使用的
+ * 生成包当中的entry
+ * @param entries
  */
-export function generatePackageOutput(entries: IEntryOption[]): Record<string, string> {
-
+export function generatePackageEntries(entries: IEntryOption[]): Record<string, string> {
   const groupByEntries = mapValues(groupBy(entries, 'format'), (values) => {
     return sortBy(values, (v) => {
-      return {
-        'production': 1,
-        'development': 0,
-      }[v.env] ?? 2;
+      return (
+        {
+          production: 1,
+          development: 0,
+        }[v.env] ?? 2
+      );
     });
   });
-  let main: string | undefined, module: string | undefined, unpkg: string | undefined, jsdelivr: string | undefined, browser: string | undefined;
+  let main: string | undefined,
+    module: string | undefined,
+    unpkg: string | undefined,
+    jsdelivr: string | undefined,
+    browser: string | undefined;
   if (groupByEntries.cjs) {
     main = groupByEntries.cjs[0].file;
   }
   if (groupByEntries.es) {
-    const el = find(groupByEntries.esm, it => !it.browser);
+    const el = find(groupByEntries.es, (it) => !it.browser);
     module = el?.file;
   }
   if (groupByEntries.es) {
-    const el = find(groupByEntries.esm, it => !!it.browser);
+    const el = find(groupByEntries.es, (it) => !!it.browser);
     browser = el?.file;
   }
   if (groupByEntries.umd) {
@@ -123,11 +152,41 @@ export function generatePackageOutput(entries: IEntryOption[]): Record<string, s
     main = find([module, browser, unpkg], (it) => !!it);
   }
 
-  return pickBy({
-    main,
-    module,
-    browser,
-    jsdelivr,
-    unpkg,
-  }, isString);
+  return pickBy(
+    {
+      main,
+      module,
+      browser,
+      jsdelivr,
+      unpkg,
+    },
+    isString
+  );
+}
+
+/**
+ * 清空包当中dts文件
+ * @param packages
+ * @param option
+ */
+export async function clearPackageOutPackageDts(packages: IPackageConfig[], option: IRollupConfig) {
+  const outputPackageJson = packages.map(pkg => {
+    const pkgPath = generateOutputPackagePath('package.json', pkg, option);
+    const pkgContent = JSON.parse(
+      readFileSync(pkgPath, {
+        encoding: 'utf-8',
+      }) as string
+    );
+    if (pkgContent.types) {
+      const d = [
+        join(process.cwd(), generateOutputPackagePath('**/*.d.ts', pkg, option)),
+        `!${join(process.cwd(), generateOutputPackagePath(pkgContent.types, pkg, option))}`,
+      ];
+      return del(d);
+    }
+    return null;
+  });
+
+
+  return Promise.all(outputPackageJson);
 }

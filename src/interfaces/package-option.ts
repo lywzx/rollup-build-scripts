@@ -11,12 +11,31 @@ export interface IPackageConfig {
   packageConfig: Record<string, any>;
 }
 
+/**
+ * 处理dts rollup 配置信息
+ */
+export interface IDtsRollupConfig {
+  input?: string;
+  output?: string;
+}
+
 export interface IRollupConfig {
+  /**
+   * 是否watch模式
+   * dev
+   */
+  watch: boolean;
   /**
    * 是否启用typescript构建
    * 默认：true
    */
   ts: boolean;
+  /**
+   * 是否启用dts合并
+   * 如果ts为true时
+   * 默认自动开启
+   */
+  dts?: boolean | IDtsRollupConfig;
   /**
    * tsconfig配置文件
    * 默认值 tsconfig.json
@@ -36,6 +55,7 @@ export interface IRollupConfig {
   input?: string;
   /**
    * 构建时input的前缀
+   * 比如放在包的src目录，可以填写为 src
    */
   inputPrefix?: string;
   /**
@@ -43,13 +63,19 @@ export interface IRollupConfig {
    */
   banner?: string;
   /**
-   * 文件输入的默认路径
-   * 默认为dest
+   * 包中文件的输出路径
+   * 比如：所有构建代码需要放到library目录
+   */
+  outLibrary?: string;
+  /**
+   * 输出的目录，
+   * 仅当outRootPath不存在时，起作用
    */
   outPrefix?: string;
   /**
    * 输出的根目录，
-   * 将会按照包名来输出
+   * 将会按照包名来生成目录，
+   * 适用将包输入到某个项目的node_modules
    */
   outRootPath?: string;
   /**

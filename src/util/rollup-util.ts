@@ -7,7 +7,8 @@ import { ExternalOption, GlobalsOption, OutputOptions, RollupOptions } from 'rol
 import { camelCase, isFunction, template, last, isObject, isArray, isString, isRegExp, mapValues } from 'lodash';
 import lazy from 'import-lazy';
 import { IPackageConfig, IRollupConfig, IRollupConfigEntryFilter, IEntryOption } from '../interfaces';
-import { generatePackageOutput } from './pkgs';
+import { isFile } from './dir';
+import { generatePackageEntries } from './packages-util';
 
 const importLazy = lazy(require);
 const rollupTypescript = importLazy('rollup-plugin-typescript2');
@@ -18,20 +19,7 @@ const commonjs = importLazy('@rollup/plugin-commonjs');
 const terser = importLazy('rollup-plugin-terser');
 const replace = importLazy('@rollup/plugin-replace');
 const copy = importLazy('rollup-plugin-copy');
-
-/**
- * check file size
- * @param file
- */
-export function checkSize(file: string) {
-  const f = readFileSync(file);
-  const minSize = (f.length / 1024).toFixed(2) + 'kb';
-  const gzipped = gzipSync(f);
-  const gzippedSize = (gzipped.length / 1024).toFixed(2) + 'kb';
-  const compressed = compress(f);
-  const compressedSize = (compressed.length / 1024).toFixed(2) + 'kb';
-  console.log(`${gray(bold(file))} size:${minSize} / gzip:${gzippedSize} / brotli:${compressedSize}`);
-}
+const dtsPlugin = importLazy('rollup-plugin-dts');
 
 /**
  * 判断当前输入是否为rollup entry filter
@@ -42,6 +30,32 @@ export function isIRollupConfigEntryFilter(config: any): config is IRollupConfig
     return true;
   }
   return false;
+}
+
+/**
+ * 生成文件输出文件路径
+ * @param file
+ * @param pkg
+ * @param option
+ */
+export function generateOutputFilePath(file: string, pkg: IPackageConfig, option: IRollupConfig) {
+  if (option.outRootPath) {
+    return join(option.outRootPath, pkg.packageConfig.name, option.outLibrary!, file);
+  }
+  return join(pkg.fullPath, option.outPrefix!, option.outLibrary!, file);
+}
+
+/**
+ * 生成package.json文件目录
+ * @param file
+ * @param pkg
+ * @param option
+ */
+export function generateOutputPackagePath(file: string, pkg: IPackageConfig, option: IRollupConfig) {
+  if (option.outRootPath) {
+    return join(option.outRootPath, pkg.packageConfig.name, file);
+  }
+  return join(pkg.fullPath, option.outPrefix!, file);
 }
 
 /**
@@ -71,19 +85,22 @@ export function filterEntryByRollupConfigEntryFilter(
  * @param pkg
  * @param entry
  * @param option
- * @param packages
- * @param entries
- * @param init
+ * @param allConfig
  */
 export function generateRollupConfig(
   pkg: IPackageConfig,
   entry: IEntryOption,
   option: IRollupConfig,
-  packages: IPackageConfig[],
-  entries: IEntryOption[],
-  // 是否是某个包首次构建
-  init: boolean
+  allConfig: {
+    packages: IPackageConfig[];
+    entries: IEntryOption[];
+    isFirst: boolean;
+    isLast: boolean;
+    index: number;
+  }
 ): RollupOptions {
+  const { isLast, packages, entries } = allConfig;
+
   const config: RollupOptions = {
     input: join(pkg.fullPath, option.inputPrefix ?? '', option.input ?? entry.input),
     plugins: [],
@@ -91,7 +108,7 @@ export function generateRollupConfig(
       banner: template(option.banner)({
         package: pkg.packageConfig,
       }),
-      file: join(pkg.fullPath, option.outRootPath ?? '', option.outPrefix ?? '', entry.file),
+      file: generateOutputFilePath(entry.file, pkg, option),
       format: entry.format,
       globals: {},
       sourcemap: option.sourcemap,
@@ -116,7 +133,8 @@ export function generateRollupConfig(
   }
 
   if (option.outputGlobals) {
-    (config.output as OutputOptions).globals = (option.outputGlobals as Record<string, GlobalsOption>)[pkg.packageConfig.name as string] ?? option.outputGlobals;
+    (config.output as OutputOptions).globals =
+      (option.outputGlobals as Record<string, GlobalsOption>)[pkg.packageConfig.name as string] ?? option.outputGlobals;
   }
 
   if (option.externalEachOther && (!config.external || isArray(config.external))) {
@@ -179,26 +197,43 @@ export function generateRollupConfig(
     );
   }
 
-  if (init) {
-    const options = [
+  if (isLast) {
+    const copyOptions: any[] = [
       {
         src: join(pkg.fullPath, 'package.json'),
-        dest: join(pkg.fullPath, option.outPrefix ?? ''),
+        dest: generateOutputPackagePath('', pkg, option),
         transform: (contents: string, filename: string) => {
           const pkgConfig = JSON.parse(contents.toString());
-          const override = mapValues(generatePackageOutput(entries), (p) => {
-            return join(option.outPrefix ?? '', p);
+          const override = mapValues(generatePackageEntries(entries), (p) => {
+            return join(option.outLibrary!, p);
           });
-          return JSON.stringify({
-            ...pkgConfig,
-            ...override,
-          }, null, 2);
-        }
+          if (option.ts) {
+            const umd = entries.find(it => it.format === 'umd' && it.env === 'development');
+            if (umd) {
+              override.types = join(option.outLibrary!, umd.file).replace('.js', '.d.ts');
+            }
+          }
+          return JSON.stringify(
+            {
+              ...pkgConfig,
+              ...override,
+            },
+            null,
+            2
+          );
+        },
       },
-    ]
+    ];
+    const readMe = ['README.md', 'readme.md'].find((f) => isFile(join(pkg.fullPath, f)));
+    if (readMe) {
+      copyOptions.push({
+        src: join(pkg.fullPath, readMe),
+        dest: generateOutputPackagePath('', pkg, option),
+      });
+    }
     config.plugins?.push(
       copy({
-        targets: options,
+        targets: copyOptions,
       })
     );
   }
@@ -208,4 +243,30 @@ export function generateRollupConfig(
   }
 
   return config;
+}
+
+/**
+ * 生成rollup-dts的配置
+ * @param pkg
+ * @param entries
+ * @param option
+ */
+export function generateRollupDtsConfig(pkg: IPackageConfig, entries: IEntryOption[], option: IRollupConfig) {
+  const { dts } = option;
+  if (!option.watch && dts && entries.length) {
+    const first = entries[0];
+    return [
+      {
+        input: generateOutputFilePath(first.input.replace('.ts', '.d.ts'), pkg, option),
+        output: [
+          {
+            file: generateOutputFilePath(first.input.replace('.ts', '.d.ts'), pkg, option),
+            format: 'es',
+          },
+        ],
+        plugins: [dtsPlugin.default()],
+      },
+    ];
+  }
+  return [];
 }

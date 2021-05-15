@@ -1,26 +1,14 @@
-import execa from 'execa';
-import { existsSync, lstatSync, } from 'fs';
+import del from 'del';
+import { existsSync, lstatSync } from 'fs';
 
 /**
  * clear dir
  * @param dirs
  */
-export function clearDirs(dirs: string[]) {
+export async function clearDirs(dirs: string[]) {
   if (dirs.length) {
-    return execa('rimraf', dirs);
+    await del(dirs);
   }
-}
-
-/**
- * 判断当前路么是否为文件
- * @param file
- */
-export function isDirectory(file: string): boolean {
-  if (existsSync(file)) {
-    const stat = lstatSync(file);
-    return stat.isDirectory();
-  }
-  return false;
 }
 
 /**

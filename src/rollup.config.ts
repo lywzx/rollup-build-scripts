@@ -1,3 +1,3 @@
-import { getAllEntry } from './scripts/build-entry';
+import { generateRollupAllAvailableEntries } from './scripts/only-build-entry';
 
-export default getAllEntry();
+export default generateRollupAllAvailableEntries();

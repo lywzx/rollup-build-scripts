@@ -1,8 +1,7 @@
-import { IPackageConfig, IRollupConfig } from '../interfaces/package-option';
+import { IPackageConfig, IRollupConfig, IEntryOption } from '../interfaces';
 import { filterEntryByRollupConfigEntryFilter, isFile, isIRollupConfigEntryFilter } from '../util';
 import { argv } from '../argv';
 import { isString, isArray } from 'lodash';
-import { IEntryOption } from '../interfaces/entry-option';
 import { join } from 'path';
 
 export const banner = `/*!
@@ -13,7 +12,7 @@ export const banner = `/*!
 
 function parseValueToString(option?: string | string[]): string[] | undefined {
   if (isString(option)) {
-    return option.split(',');
+    return option.split(',').filter(i => !!i);
   }
   if (isArray(option)) {
     return option;
@@ -21,23 +20,28 @@ function parseValueToString(option?: string | string[]): string[] | undefined {
   return undefined;
 }
 
-export function loadRollupConfig(file = join(process.cwd(), '.rollup.config.js')): IRollupConfig {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const config = isFile(file) ? require(file) : argv;
+export function loadRollupConfig(file = '.rollup.config.js'): IRollupConfig {
+  const realPath = join(process.cwd(), file);
+  const config = isFile(realPath) ? require(realPath) : argv;
+  const enableTs = argv.ts ?? config.ts ?? false;
+  const enableDts = argv.dts ?? config.dts ?? true;
 
   return {
-    ts: argv.ts ?? config.ts,
+    ts: enableTs,
+    watch: process.argv.includes('-w'),
+    dts: enableTs ? enableDts : false,
     tsconfig: argv.tsconfig ?? config.tsconfig ?? 'tsconfig.json',
     tsconfigOverride: config.tsconfigOverride ?? {},
     json: argv.json ?? config.json ?? false,
     input: argv.input ?? config.input,
-    inputPrefix: argv.inputPrefix ?? config.inputPrefix,
+    inputPrefix: argv['input-prefix'] ?? config.inputPrefix ?? '',
     banner: config.banner ?? banner,
-    outPrefix: argv.outPrefix ?? config.outPrefix ?? 'dist',
-    outRootPath: argv.outRootPath ?? config.outRootPath,
-    rollupPath: argv.rollupPath ?? config.rollupPath ?? 'node_modules/rollup/dist/bin/rollup',
+    outPrefix: argv['output-prefix'] ?? config.outPrefix ?? 'dist',
+    outLibrary: argv['output-lib'] ?? config.outLibrary ?? '',
+    outRootPath: argv['output-root-path'] ?? config.outRootPath ?? '',
+    rollupPath: argv['rollup-path'] ?? config.rollupPath ?? 'node_modules/.bin/rollup',
     workspace: parseValueToString(argv.workspace) ?? config.workspace,
-    onlyPackage: parseValueToString(argv.onlyPackage) ?? config.onlyPackage,
+    onlyPackage: parseValueToString(argv['only-package']) ?? config.onlyPackage,
     sourcemap: argv.sourcemap ?? config.sourcemap ?? true,
     buble: config.buble,
     commonjs: config.commonjs,

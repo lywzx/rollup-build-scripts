@@ -1,4 +1,5 @@
 import minimist from 'minimist';
+import { getArgsArray } from '../util/args';
 
 /**
  * 所有的argv参数
@@ -12,4 +13,4 @@ import minimist from 'minimist';
  * --only-package 仅构建指定的包
  * --ts 启用typescript的构建，默认启用
  */
-export const argv = minimist(process.argv.slice(2));
+export const argv = minimist(getArgsArray());

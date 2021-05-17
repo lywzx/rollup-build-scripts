@@ -29,7 +29,7 @@ export function loadRollupConfig(file = '.rollup.config.js'): IRollupConfig {
   return {
     ts: enableTs,
     watch: process.argv.includes('-w'),
-    dts: enableTs ? enableDts : false,
+    dts: enableTs ? (typeof enableDts === 'string' ? enableDts != 'false' : enableDts) : false,
     tsconfig: argv.tsconfig ?? config.tsconfig ?? 'tsconfig.json',
     tsconfigOverride: config.tsconfigOverride ?? {},
     json: argv.json ?? config.json ?? false,

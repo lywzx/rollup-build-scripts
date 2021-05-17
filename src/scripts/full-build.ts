@@ -56,7 +56,9 @@ export async function run() {
 
 
   // clear rollup other.d.ts
-  await clearPackageOutPackageDts(allAllowPackages, option);
+  if(option.dts) {
+    await clearPackageOutPackageDts(allAllowPackages, option);
+  }
 
   // 打印日志
   checkAllSizes(allEntries);

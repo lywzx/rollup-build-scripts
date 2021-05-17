@@ -8,7 +8,8 @@ import {
   getAllowPackages,
   getAllPackages,
   packageOnlyEntryFilter,
-  checkAllSizes, clearPackageOutPackageDts,
+  checkAllSizes,
+  clearPackageOutPackageDts,
 } from '../util';
 import { flatten } from 'lodash';
 import { join } from 'path';
@@ -54,9 +55,8 @@ export async function run() {
     }
   );
 
-
   // clear rollup other.d.ts
-  if(option.dts) {
+  if (option.dts) {
     await clearPackageOutPackageDts(allAllowPackages, option);
   }
 

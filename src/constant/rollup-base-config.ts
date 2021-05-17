@@ -12,7 +12,7 @@ export const banner = `/*!
 
 function parseValueToString(option?: string | string[]): string[] | undefined {
   if (isString(option)) {
-    return option.split(',').filter(i => !!i);
+    return option.split(',').filter((i) => !!i);
   }
   if (isArray(option)) {
     return option;

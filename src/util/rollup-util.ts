@@ -208,7 +208,7 @@ export function generateRollupConfig(
             return join(option.outLibrary!, p);
           });
           if (option.ts) {
-            const umd = entries.find(it => it.format === 'umd' && it.env === 'development');
+            const umd = entries.find((it) => it.format === 'umd' && it.env === 'development');
             if (umd) {
               override.types = join(option.outLibrary!, umd.file).replace('.js', '.d.ts');
             }

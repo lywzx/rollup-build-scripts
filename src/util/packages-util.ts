@@ -27,20 +27,18 @@ export function getAllPackages(options: IRollupConfig): IPackageConfig[] {
             return false;
           })
           .filter((it): it is { workspace: string; dir: string } => !!it)
-          .map(
-            (it): IPackageConfig => {
-              const fullPath = join(it.workspace, it.dir);
-              return {
-                ...it,
-                fullPath,
-                packageConfig: JSON.parse(
-                  readFileSync(join(fullPath, 'package.json'), {
-                    encoding: 'utf-8',
-                  }) as string
-                ),
-              };
-            }
-          );
+          .map((it): IPackageConfig => {
+            const fullPath = join(it.workspace, it.dir);
+            return {
+              ...it,
+              fullPath,
+              packageConfig: JSON.parse(
+                readFileSync(join(fullPath, 'package.json'), {
+                  encoding: 'utf-8',
+                }) as string
+              ),
+            };
+          });
       })
     );
   }
@@ -170,7 +168,7 @@ export function generatePackageEntries(entries: IEntryOption[]): Record<string, 
  * @param option
  */
 export async function clearPackageOutPackageDts(packages: IPackageConfig[], option: IRollupConfig) {
-  const outputPackageJson = packages.map(pkg => {
+  const outputPackageJson = packages.map((pkg) => {
     const pkgPath = generateOutputPackagePath('package.json', pkg, option);
     const pkgContent = JSON.parse(
       readFileSync(pkgPath, {
@@ -186,7 +184,6 @@ export async function clearPackageOutPackageDts(packages: IPackageConfig[], opti
     }
     return null;
   });
-
 
   return Promise.all(outputPackageJson);
 }

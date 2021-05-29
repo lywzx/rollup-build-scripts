@@ -137,8 +137,9 @@ export interface IRollupConfig {
   /**
    * 可以自定议修改rollup的配置文件
    * @param config
+   * @param pkg
    */
-  handleConfig(config: InputOptions): InputOptions;
+  handleConfig(config: InputOptions, pkg: IPackageConfig): InputOptions;
 }
 
 export interface IRollupConfigEntryFilter {

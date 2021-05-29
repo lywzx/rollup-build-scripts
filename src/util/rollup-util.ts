@@ -239,7 +239,7 @@ export function generateRollupConfig(
   }
 
   if (option.handleConfig) {
-    return option.handleConfig(config);
+    return option.handleConfig(config, pkg);
   }
 
   return config;

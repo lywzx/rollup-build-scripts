@@ -1,8 +1,4 @@
 import { join } from 'path';
-import { readFileSync } from 'fs';
-import { gzipSync } from 'zlib';
-import { compress } from 'brotli';
-import { gray, bold } from 'chalk';
 import { ExternalOption, GlobalsOption, OutputOptions, RollupOptions } from 'rollup';
 import { camelCase, isFunction, template, last, isObject, isArray, isString, isRegExp, mapValues } from 'lodash';
 import lazy from 'import-lazy';

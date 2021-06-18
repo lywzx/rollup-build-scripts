@@ -1,6 +1,6 @@
 {
   "name": "@lywzx/rollup-build-scripts",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "rollup build script",
   "main": "index.js",
   "scripts": {

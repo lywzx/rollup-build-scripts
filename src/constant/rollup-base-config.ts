@@ -1,5 +1,5 @@
 import { IPackageConfig, IRollupConfig, IEntryOption } from '../interfaces';
-import { filterEntryByRollupConfigEntryFilter, isFile, isIRollupConfigEntryFilter } from '../util';
+import { filterEntryByRollupConfigEntryFilter, filterEntryByString, isFile, isIRollupConfigEntryFilter } from '../util';
 import { argv } from '../argv';
 import { isString, isArray } from 'lodash';
 import { join } from 'path';
@@ -10,21 +10,46 @@ export const banner = `/*!
  * @license <%= package.license %>
  */`;
 
-function parseValueToString(option?: string | string[]): string[] | undefined {
+export function parseValueToString(option?: string | string[]): Array<string | RegExp> | undefined {
   if (isString(option)) {
-    return option.split(',').filter((i) => !!i);
+    option = option
+      .split(',')
+      .map((i) => i.trim())
+      .filter((i) => {
+        if (i === '*') {
+          return false;
+        }
+        return !!i;
+      });
   }
-  if (isArray(option)) {
-    return option;
+  if (isArray(option) && option.length) {
+    return option.map((it) => {
+      if (it.startsWith('*')) {
+        return new RegExp(`${it.replace('*', '^@?[a-zA-Z._-]+')}$`);
+      }
+      if (it.endsWith('*')) {
+        return new RegExp(`^${it.replace('*', '[a-zA-Z._-]+$')}`);
+      }
+      if (it.includes('*')) {
+        return new RegExp(`^${it.replace('*', '[a-zA-Z._-]+')}$`);
+      }
+      return it;
+    });
   }
   return undefined;
 }
 
+/**
+ * 加载rollup配置文件
+ *
+ * @param file
+ */
 export function loadRollupConfig(file = '.rollup.config.js'): IRollupConfig {
   const realPath = join(process.cwd(), file);
   const config = isFile(realPath) ? require(realPath) : argv;
   const enableTs = argv.ts ?? config.ts ?? false;
   const enableDts = argv.dts ?? config.dts ?? true;
+  const onlyEntry = argv['only-entry'] || config.onlyEntry;
 
   return {
     ts: enableTs,
@@ -51,13 +76,16 @@ export function loadRollupConfig(file = '.rollup.config.js'): IRollupConfig {
     external: config.external ?? {},
     outputGlobals: config.outputGlobals ?? {},
     onlyEntry: (input: IEntryOption, pkg: IPackageConfig) => {
-      if (typeof config.onlyEntry === 'function') {
+      if (typeof onlyEntry === 'function') {
         return config.onlyEntry(input, pkg);
       }
-      if (isIRollupConfigEntryFilter(config.onlyEntry)) {
-        return filterEntryByRollupConfigEntryFilter(input, pkg, config.onlyEntry);
+      if (typeof onlyEntry === 'string') {
+        return filterEntryByString(input, pkg, onlyEntry);
       }
-      if (config.onlyEntry && config.onlyEntry[pkg.packageConfig.name]) {
+      if (isIRollupConfigEntryFilter(onlyEntry)) {
+        return filterEntryByRollupConfigEntryFilter(input, pkg, onlyEntry);
+      }
+      if (onlyEntry && onlyEntry[pkg.packageConfig.name]) {
         return filterEntryByRollupConfigEntryFilter(input, pkg, config.onlyEntry[pkg.packageConfig.name]);
       }
       return true;

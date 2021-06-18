@@ -61,9 +61,14 @@ export function getAllPackages(options: IRollupConfig): IPackageConfig[] {
  * @param config
  */
 export function getAllowPackages(options: IPackageConfig[], config: IRollupConfig): IPackageConfig[] {
-  return options.filter((it) => {
+  return options.filter((pkg) => {
     if (config.onlyPackage) {
-      return config.onlyPackage.includes(it.packageConfig.name);
+      return config.onlyPackage.some((it) => {
+        if (typeof it === 'string') {
+          return it === pkg.packageConfig.name;
+        }
+        return it.test(pkg.packageConfig.name);
+      });
     }
     return true;
   });
@@ -90,7 +95,7 @@ export function getAllPackagesRollupEntry(packages: IPackageConfig[], option: IR
       const availableEntries = entries(option.ts).filter((it) => {
         return packageOnlyEntryFilter(pkg, it, option);
       });
-
+    console.log('aaaaaaaa', availableEntries);
       // 构建代码的entry
       const buildEntry = availableEntries.map((entry, index) => {
         return generateRollupConfig(pkg, entry, option, {

@@ -28,7 +28,11 @@ yarn add @lywzx/rollup-build-scripts --dev // 或 npm install @lywzx/rollup-buil
 * --output-lib 构建包内文件时，输出的默认路径
 * --rollup-path 安装的rollup的路径，默认node_modules/.bin/rollup
 * --workspace 当多包开发时，启用workspace存在时，将会自动从workspace下中查询
-* --only-package 限制构建的包
+* --only-package 限制构建的包(支持*匹配包名)
+* --only-entry 限制构建类型
+  - minify 仅构建非压缩类型
+  - es,umd,cjs 仅构构建以上类型入口
+  - browser 仅构建浏览器的入口 
 * --sourcemap 是否需要生成sourcemap
 * --r-config 指定配置文件
 

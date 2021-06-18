@@ -1,6 +1,6 @@
 import { join } from 'path';
 import { ExternalOption, GlobalsOption, OutputOptions, RollupOptions } from 'rollup';
-import { camelCase, isFunction, template, last, isObject, isArray, isString, isRegExp, mapValues } from 'lodash';
+import { camelCase, isFunction, template, last, isObject, isArray, isString, isRegExp, mapValues, merge } from 'lodash';
 import lazy from 'import-lazy';
 import { IPackageConfig, IRollupConfig, IRollupConfigEntryFilter, IEntryOption } from '../interfaces';
 import { isFile } from './dir';
@@ -52,28 +52,6 @@ export function generateOutputPackagePath(file: string, pkg: IPackageConfig, opt
     return join(option.outRootPath, pkg.packageConfig.name, file);
   }
   return join(pkg.fullPath, option.outPrefix!, file);
-}
-
-/**
- * 判断当明入口是否被显示
- * @param input
- * @param pkg
- * @param config
- */
-export function filterEntryByRollupConfigEntryFilter(
-  input: IEntryOption,
-  pkg: IPackageConfig,
-  config: IRollupConfigEntryFilter
-) {
-  if ('browser' in config) {
-    if (input.browser !== config.browser) {
-      return false;
-    }
-  }
-  if (config.format) {
-    return config.format.includes(input.format);
-  }
-  return true;
 }
 
 /**
@@ -148,9 +126,14 @@ export function generateRollupConfig(
     config.plugins?.push(
       rollupTypescript({
         tsconfig: join(pkg.fullPath, option.tsconfig ?? 'tsconfig.json'),
-        tsconfigOverride: {
-          ...(option.tsconfigOverride ?? {}),
-        },
+        tsconfigOverride: merge(
+          {
+            include: [join(pkg.fullPath, option.inputPrefix ?? '')],
+          },
+          {
+            ...(option.tsconfigOverride ?? {}),
+          }
+        ),
       })
     );
   }

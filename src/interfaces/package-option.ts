@@ -90,7 +90,7 @@ export interface IRollupConfig {
   /**
    * 只构建以下列举的包
    */
-  onlyPackage?: string[];
+  onlyPackage?: Array<string | RegExp>;
   /**
    * 是否要生成sourcemap
    * 默认： true
@@ -131,6 +131,7 @@ export interface IRollupConfig {
    * 限制构建包类型
    */
   onlyEntry?:
+    | string
     | IRollupConfigOnlyEntry
     | IRollupConfigEntryFilter
     | ((input: IEntryOption, pkg: IPackageConfig) => boolean);
@@ -151,6 +152,10 @@ export interface IRollupConfigEntryFilter {
    * 只构建某一种类型
    */
   format?: string | string[];
+  /**
+   * 是否压缩
+   */
+  minify?: boolean;
 }
 
 export interface IRollupConfigOnlyEntry {

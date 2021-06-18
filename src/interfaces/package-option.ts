@@ -135,12 +135,18 @@ export interface IRollupConfig {
     | IRollupConfigOnlyEntry
     | IRollupConfigEntryFilter
     | ((input: IEntryOption, pkg: IPackageConfig) => boolean);
+
+  /**
+   * 处理文件复制package.json文件复制，修改内容
+   * @param pkg
+   */
+  handleCopyPackageJson?(pkg: Record<string, any>): Record<string, any>;
   /**
    * 可以自定议修改rollup的配置文件
    * @param config
    * @param pkg
    */
-  handleConfig(config: InputOptions, pkg: IPackageConfig): InputOptions;
+  handleConfig?(config: InputOptions, pkg: IPackageConfig): InputOptions;
 }
 
 export interface IRollupConfigEntryFilter {

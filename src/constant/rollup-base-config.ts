@@ -75,6 +75,16 @@ export function loadRollupConfig(file = '.rollup.config.js'): IRollupConfig {
     externalEachOther: config.externalEachOther ?? false,
     external: config.external ?? {},
     outputGlobals: config.outputGlobals ?? {},
+    /**
+     * 处理输入的package.json文件
+     * @param input
+     */
+    handleCopyPackageJson: (input: Record<string, any>) => {
+      if (typeof config.handleCopyPackageJson === 'function') {
+        return config.handleCopyPackageJson(input);
+      }
+      return input;
+    },
     onlyEntry: (input: IEntryOption, pkg: IPackageConfig) => {
       if (typeof onlyEntry === 'function') {
         return config.onlyEntry(input, pkg);

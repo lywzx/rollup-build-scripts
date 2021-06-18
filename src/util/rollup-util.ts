@@ -128,7 +128,7 @@ export function generateRollupConfig(
         tsconfig: join(pkg.fullPath, option.tsconfig ?? 'tsconfig.json'),
         tsconfigOverride: {
           ...(option.tsconfigOverride ?? {}),
-        }
+        },
       })
     );
   }
@@ -187,11 +187,12 @@ export function generateRollupConfig(
               override.types = join(option.outLibrary!, umd.file).replace('.js', '.d.ts');
             }
           }
+
           return JSON.stringify(
-            {
+            option.handleCopyPackageJson!({
               ...pkgConfig,
               ...override,
-            },
+            }),
             null,
             2
           );

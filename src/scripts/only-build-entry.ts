@@ -8,6 +8,6 @@ import { loadRollupConfig } from '../constant';
 export function generateRollupAllAvailableEntries() {
   const option = loadRollupConfig(argv['r-config']);
   const allPackage = getAllPackages(option);
-console.log('aaaa', allPackage);
+
   return getAllPackagesRollupEntry(allPackage, option);
 }

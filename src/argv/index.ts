@@ -11,6 +11,7 @@ import { getArgsArray } from '../util/args';
  * --out-root-path 输入的根目录，默认情况会输出到每个目录下，如果指定，会输出到指定目录
  * --rollup-path 安装的rollup的路径：默认：node_modules/rollup/dist/bin/rollup
  * --only-package 仅构建指定的包
+ * --only-entry 限制构建类型
  * --ts 启用typescript的构建，默认启用
  */
 export const argv = minimist(getArgsArray());

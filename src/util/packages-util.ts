@@ -95,7 +95,7 @@ export function getAllPackagesRollupEntry(packages: IPackageConfig[], option: IR
       const availableEntries = entries(option.ts).filter((it) => {
         return packageOnlyEntryFilter(pkg, it, option);
       });
-    console.log('aaaaaaaa', availableEntries);
+
       // 构建代码的entry
       const buildEntry = availableEntries.map((entry, index) => {
         return generateRollupConfig(pkg, entry, option, {

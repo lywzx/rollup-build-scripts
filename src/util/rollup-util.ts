@@ -126,14 +126,9 @@ export function generateRollupConfig(
     config.plugins?.push(
       rollupTypescript({
         tsconfig: join(pkg.fullPath, option.tsconfig ?? 'tsconfig.json'),
-        tsconfigOverride: merge(
-          {
-            include: [join(pkg.fullPath, option.inputPrefix ?? '')],
-          },
-          {
-            ...(option.tsconfigOverride ?? {}),
-          }
-        ),
+        tsconfigOverride: {
+          ...(option.tsconfigOverride ?? {}),
+        }
       })
     );
   }

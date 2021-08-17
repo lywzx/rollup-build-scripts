@@ -7,7 +7,9 @@ import { existsSync, lstatSync } from 'fs';
  */
 export async function clearDirs(dirs: string[]) {
   if (dirs.length) {
-    await del(dirs);
+    await del(dirs, {
+      force: true,
+    });
   }
 }
 

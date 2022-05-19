@@ -1,8 +1,9 @@
 {
   "name": "@lywzx/rollup-build-scripts",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "rollup build script",
   "main": "index.js",
+  "types": "index.d.ts",
   "publishConfig": {
     "registry": "https://registry.npmjs.org",
     "access": "public"

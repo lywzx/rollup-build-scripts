@@ -80,6 +80,7 @@ export interface IRollupConfig {
   outRootPath?: string;
   /**
    * rollup安装的目录
+   * @deprecated
    */
   rollupPath?: string;
   /**

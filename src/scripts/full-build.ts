@@ -1,4 +1,3 @@
-import execa from 'execa';
 import { argv } from '../argv';
 import { entries, loadRollupConfig } from '../constant';
 import {
@@ -12,11 +11,8 @@ import {
   clearPackageOutPackageDts,
 } from '../util';
 import { flatten } from 'lodash';
-import { join } from 'path';
-import { getArgsArray } from '../util/args';
 import { rollup, RollupOptions } from "rollup";
 import { generateRollupAllAvailableEntries } from "./only-build-entry";
-import RollupConfig from "../rollup.config";
 
 export async function run() {
   const option = loadRollupConfig(argv['r-config']);
@@ -53,14 +49,12 @@ export async function run() {
       // an array of file names this bundle depends on
       console.log(bundle.watchFiles);
 
-
     }
 
   }
 
-
   // 代码构建
-  await execa(
+/*  await execa(
     'node',
     [
       '--max_old_space_size=8192',
@@ -72,7 +66,7 @@ export async function run() {
     {
       stdio: 'inherit',
     }
-  );
+  );*/
 
   // clear rollup other.d.ts
   if (option.dts) {

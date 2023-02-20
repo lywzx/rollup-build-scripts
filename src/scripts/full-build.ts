@@ -14,6 +14,9 @@ import {
 import { flatten } from 'lodash';
 import { join } from 'path';
 import { getArgsArray } from '../util/args';
+import { rollup, RollupOptions } from "rollup";
+import { generateRollupAllAvailableEntries } from "./only-build-entry";
+import RollupConfig from "../rollup.config";
 
 export async function run() {
   const option = loadRollupConfig(argv['r-config']);
@@ -39,6 +42,22 @@ export async function run() {
       return generateOutputPackagePath('', pkg, option);
     })
   );
+
+  const allConfig = generateRollupAllAvailableEntries();
+
+  try {
+    let config: RollupOptions;
+    while ( config = allConfig.shift()!) {
+      // create a bundle
+      const bundle = await rollup(config);
+      // an array of file names this bundle depends on
+      console.log(bundle.watchFiles);
+
+
+    }
+
+  }
+
 
   // 代码构建
   await execa(

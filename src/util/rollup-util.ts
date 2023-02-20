@@ -1,18 +1,18 @@
 import { join } from 'path';
-import { ExternalOption, GlobalsOption, OutputOptions, RollupOptions } from 'rollup';
-import { camelCase, isFunction, template, last, isObject, isArray, isString, isRegExp, mapValues, merge } from 'lodash';
+import { ExternalOption, GlobalsOption, InputPluginOption, OutputOptions, RollupOptions } from 'rollup';
+import { camelCase, isFunction, template, last, isObject, isArray, isString, isRegExp, mapValues } from 'lodash';
 import lazy from 'import-lazy';
 import { IPackageConfig, IRollupConfig, IRollupConfigEntryFilter, IEntryOption } from '../interfaces';
 import { isFile } from './dir';
 import { generatePackageEntries } from './packages-util';
 
 const importLazy = lazy(require);
-const rollupTypescript = importLazy('rollup-plugin-typescript2');
+const rollupTypescript = importLazy('@rollup/plugin-typescript');
 const json = importLazy('@rollup/plugin-json');
 const buble = importLazy('@rollup/plugin-buble');
 const resolve = importLazy('@rollup/plugin-node-resolve');
 const commonjs = importLazy('@rollup/plugin-commonjs');
-const terser = importLazy('rollup-plugin-terser');
+const terser = importLazy('@rollup/plugin-terser');
 const replace = importLazy('@rollup/plugin-replace');
 const copy = importLazy('rollup-plugin-copy');
 const dtsPlugin = importLazy('rollup-plugin-dts');
@@ -75,7 +75,7 @@ export function generateRollupConfig(
 ): RollupOptions {
   const { isLast, packages, entries } = allConfig;
 
-  const config: RollupOptions = {
+  const config: RollupOptions & { plugins: InputPluginOption[] } = {
     input: join(pkg.fullPath, option.inputPrefix ?? '', option.input ?? entry.input),
     plugins: [],
     output: {
@@ -126,9 +126,7 @@ export function generateRollupConfig(
     config.plugins?.push(
       rollupTypescript({
         tsconfig: join(pkg.fullPath, option.tsconfig ?? 'tsconfig.json'),
-        tsconfigOverride: {
-          ...(option.tsconfigOverride ?? {}),
-        },
+        ...(option.tsconfigOverride ?? {}),
       })
     );
   }
@@ -144,7 +142,7 @@ export function generateRollupConfig(
     config.plugins?.push(
       resolve.nodeResolve({
         preferBuiltins: false,
-        extends: option.extensions ?? ['.ts', '.tsx', '.js', '.mjs'],
+        extends: option.extensions ?? ['.js', '.mjs', '.ts', '.tsx'],
       })
     );
   }
@@ -157,18 +155,14 @@ export function generateRollupConfig(
     config.plugins?.push(
       commonjs({
         transformMixedEsModules: true,
-        extensions: ['.ts', '.tsx', '.js'],
+        extensions: ['.js', '.ts', '.tsx'],
         ...(option.commonjs ?? {}),
       })
     );
   }
 
   if (entry.minify) {
-    config.plugins?.push(
-      terser.terser({
-        module: entry.format === 'es',
-      })
-    );
+    config.plugins?.push(terser({ maxWorkers: 4, module: entry.format === 'es' }));
   }
 
   if (isLast) {
@@ -226,7 +220,11 @@ export function generateRollupConfig(
  * @param entries
  * @param option
  */
-export function generateRollupDtsConfig(pkg: IPackageConfig, entries: IEntryOption[], option: IRollupConfig) {
+export function generateRollupDtsConfig(
+  pkg: IPackageConfig,
+  entries: IEntryOption[],
+  option: IRollupConfig
+): RollupOptions[] {
   const { dts } = option;
   if (!option.watch && dts && entries.length) {
     const first = entries[0];

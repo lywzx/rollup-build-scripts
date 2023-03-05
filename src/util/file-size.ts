@@ -1,28 +1,31 @@
 import { compress } from 'brotli';
 import { bold, gray } from 'chalk';
-import { readFileSync } from 'fs';
-import { gzipSync } from 'zlib';
+import { gzip, readFile } from './fs';
 
 /**
  * check all file size
  * @param files
  */
-export function checkAllSizes(files: string[]) {
+export async function checkAllSizes(files: string[]) {
   console.log();
-  files.forEach((f) => checkSize(f));
+  const filesClone = files.slice();
+  let currentFile: string | undefined;
+  while ((currentFile = filesClone.shift())) {
+    await checkSize(currentFile);
+  }
   console.log();
 }
 
 /**
- * check file size
- * @param file
+ * check filePath size
+ * @param filePath
  */
-export function checkSize(file: string) {
-  const f = readFileSync(file);
-  const minSize = (f.length / 1024).toFixed(2) + 'kb';
-  const gzipped = gzipSync(f);
+export async function checkSize(filePath: string) {
+  const file = await readFile(filePath);
+  const minSize = (file.length / 1024).toFixed(2) + 'kb';
+  const gzipped = await gzip(file);
   const gzippedSize = (gzipped.length / 1024).toFixed(2) + 'kb';
-  const compressed = compress(f);
+  const compressed = compress(file);
   const compressedSize = (compressed.length / 1024).toFixed(2) + 'kb';
-  console.log(`${gray(bold(file))} size:${minSize} / gzip:${gzippedSize} / brotli:${compressedSize}`);
+  console.log(`${gray(bold(filePath))} size:${minSize} / gzip:${gzippedSize} / brotli:${compressedSize}`);
 }

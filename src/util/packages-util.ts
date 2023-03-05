@@ -7,6 +7,43 @@ import { readFileSync } from 'fs';
 import { flatten, isFunction, isString, groupBy, find, mapValues, sortBy, last, pickBy } from 'lodash';
 import { entries } from '../constant';
 import { generateOutputPackagePath, generateRollupConfig, generateRollupDtsConfig } from './rollup-util';
+import { readdir } from './fs';
+
+/**
+ * 扫描目录下的所有package.json文件
+ * @param workspace
+ * @param depth
+ */
+export async function scanWorkspacePackages(workspace: string[] | string, depth = 1): IPackageConfig[] {
+  const workspaces = isString(workspace) ? [workspace] : workspace;
+
+  const packages = await Promise.all(
+    workspaces.map(async (w) => {
+      const dirs = await readdir(w);
+      const result = await Promise.all(
+        dirs.map(async (dir) => {
+          const fullPath = join(w, dir, 'package.json');
+          if (await isFile(fullPath)) {
+            return {
+              workspace: w,
+              dir,
+            };
+          }
+          return false;
+        })
+      );
+      return result.filter((i): i is Pick<IPackageConfig, 'workspace' | 'dir'> => !!i);
+    })
+  );
+
+  return packages.flat().map((i) => {
+    return {
+      ...i,
+      fullPath: '',
+      packageConfig: {},
+    };
+  });
+}
 
 /**
  * 获取所有的包内容

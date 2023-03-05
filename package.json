@@ -1,6 +1,6 @@
 {
   "name": "@lywzx/rollup-build-scripts",
-  "version": "0.0.12",
+  "version": "1.0.0",
   "description": "rollup build script",
   "main": "index.js",
   "types": "index.d.ts",
@@ -66,7 +66,6 @@
     "@rollup/plugin-replace": "^5.0.2"
   },
   "dependencies": {
-    "execa": "^4.0.3",
     "import-lazy": "4.0.0",
     "del": "~6.0.0",
     "chalk": "^4.1.0",

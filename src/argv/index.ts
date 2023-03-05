@@ -14,4 +14,4 @@ import { getArgsArray } from '../util/args';
  * --only-entry 限制构建类型
  * --ts 启用typescript的构建，默认启用
  */
-export const argv = minimist(getArgsArray());
+export const argv = getArgsArray();

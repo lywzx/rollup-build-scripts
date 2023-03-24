@@ -43,17 +43,18 @@ export function parseValueToString(option?: string | string[]): Array<string | R
  * 加载rollup配置文件
  *
  * @param file
+ * @param root
  */
-export function loadRollupConfig(file = '.rollup.config.js'): IRollupConfig {
-  const realPath = join(process.cwd(), file);
-  const config = isFile(realPath) ? require(realPath) : argv;
+export async function loadRollupConfig(file = '.rollup.config.js', root = process.cwd()): Promise<IRollupConfig> {
+  const realPath = join(root, file);
+  const config = (await isFile(realPath)) ? require(realPath) : argv;
   const enableTs = argv.ts ?? config.ts ?? false;
   const enableDts = argv.dts ?? config.dts ?? true;
   const onlyEntry = argv['only-entry'] || config.onlyEntry;
 
   return {
     ts: enableTs,
-    watch: process.argv.includes('-w'),
+    watch: argv.w ?? argv.watch ?? false,
     dts: enableTs ? (typeof enableDts === 'string' ? enableDts != 'false' : enableDts) : false,
     tsconfig: argv.tsconfig ?? config.tsconfig ?? 'tsconfig.json',
     tsconfigOverride: config.tsconfigOverride ?? {},

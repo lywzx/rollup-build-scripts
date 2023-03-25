@@ -15,7 +15,7 @@ import { rollup, RollupOptions } from "rollup";
 import { generateRollupAllAvailableEntries } from "./only-build-entry";
 
 export async function run() {
-  const option = loadRollupConfig(argv['r-config']);
+  const option = await loadRollupConfig(argv['r-config']);
   const allPackages = getAllPackages(option);
   const allAllowPackages = getAllowPackages(allPackages, option);
   const allEntries = flatten(
@@ -51,7 +51,7 @@ export async function run() {
 
     }
 
-  }
+  } catch (e) {}
 
   // 代码构建
 /*  await execa(

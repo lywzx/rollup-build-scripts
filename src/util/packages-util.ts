@@ -48,7 +48,7 @@ export async function scanWorkspacePackages(workspace: string[] | string, depth 
 /**
  * 获取所有的包内容
  */
-export function getAllPackages(options: IRollupConfig): IPackageConfig[] {
+export async function getAllPackages(options: IRollupConfig): IPackageConfig[] {
   if (options.workspace && options.workspace.length) {
     return flatten(
       options.workspace.map((w: string) => {
@@ -79,7 +79,7 @@ export function getAllPackages(options: IRollupConfig): IPackageConfig[] {
       })
     );
   }
-  if (isFile('package.json')) {
+  if (await isFile('package.json')) {
     return [
       {
         workspace: '',

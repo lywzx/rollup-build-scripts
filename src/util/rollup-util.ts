@@ -1,5 +1,5 @@
 import { join } from 'path';
-import { ExternalOption, GlobalsOption, OutputOptions, RollupOptions } from 'rollup';
+import { ExternalOption, GlobalsOption, InputPluginOption, OutputOptions, RollupOptions } from 'rollup';
 import { camelCase, isFunction, template, last, isObject, isArray, isString, isRegExp, mapValues } from 'lodash';
 import lazy from 'import-lazy';
 import { IPackageConfig, IRollupConfig, IRollupConfigEntryFilter, IEntryOption } from '../interfaces';

@@ -1,9 +1,12 @@
 import { Command, createCommand } from 'commander';
+import { ICliBuild, ICliBuildDirectory } from './interfaces/cli';
 
 const command = createCommand('rbs').description('quickly building library files based on Rollup.js').version('0.0.7');
 
 function buildDirectory(command: Command) {
-  return command.option('-w, --workspace [workspace...]', 'enable workspace mode and input the working directory');
+  return command
+    .option('-w, --workspace [workspace...]', 'enable workspace mode and input the working directory')
+    .option('-op, --output-prefix <outputPrefx>', 'Specify the directory prefix for the output.', '');
 }
 
 function buildCommandArgs(command: Command) {
@@ -26,7 +29,6 @@ function buildCommandArgs(command: Command) {
  * @license <%= package.license %>
  */`
     )
-    .option('-op, --output-prefix <outputPrefx>', 'Specify the directory prefix for the output.', '')
     .option('-s, --enable-sourcemap', 'enable output sourcemap')
     .option('-et, --external [packages...]', 'build external package')
     .option('-ee, --external-each-other', 'when workspace mode, all model as external each other.', true)
@@ -55,9 +57,11 @@ function createCommandAction(
  * build command
  */
 createCommandAction('build', 'building your library', [buildDirectory, buildCommandArgs]).action(function (
-  option,
+  option: ICliBuildDirectory & ICliBuild,
   command
-) {});
+) {
+  debugger
+});
 
 /**
  * dev command
@@ -69,7 +73,7 @@ createCommandAction('dev', 'watch file changes and build in real-time', [buildDi
 /**
  * clean command
  */
-createCommandAction('clean', 'clean build artifacts', [buildDirectory]).action(function (option, command) {
+createCommandAction('clean', 'clean build artifacts', [buildDirectory]).action(function (option: ICliBuildDirectory, command) {
 
 });
 

@@ -8,6 +8,7 @@ export interface IPackageConfig {
   workspace: string;
   dir: string;
   fullPath: string;
+  packageName: string;
   packageConfig: Record<string, any>;
 }
 

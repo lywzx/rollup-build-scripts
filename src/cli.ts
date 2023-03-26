@@ -1,24 +1,29 @@
 import { Command, createCommand } from 'commander';
-import { ICliBuild, ICliBuildDirectory } from './interfaces/cli';
+import { ICliBuild, ICliBuildDirectory, ICliEnterFilter } from './interfaces/cli';
+import { readFileSync } from 'fs';
+import { join } from 'path';
+import { filteredPackages, scanAllPackages } from './util/package';
+import { clearDirs } from './util';
 
-const command = createCommand('rbs').description('quickly building library files based on Rollup.js').version('0.0.7');
+const packageInfo = JSON.parse(readFileSync(join(__dirname, '../package.json'), { encoding: 'utf-8' }));
 
-function buildDirectory(command: Command) {
-  return command
-    .option('-w, --workspace [workspace...]', 'enable workspace mode and input the working directory')
-    .option('-op, --output-prefix <outputPrefx>', 'Specify the directory prefix for the output.', '');
-}
+const command = createCommand('rbs')
+  .description('quickly building library files based on Rollup.js')
+  .version(packageInfo.version);
 
+/**
+ * build command common args
+ * @param command
+ */
 function buildCommandArgs(command: Command) {
   return command
     .option('-c, --config [config]', 'configuration file location')
     .option('-ts, --enable-typescript', 'enable typescript', false)
     .option('-dts, --enable-dts', 'enable typescript declaration merging', false)
-    .option('-f, --only-entry <onlyEntry>', 'when in workspace mode, only build the specified package')
-    .option('-e, --exclude-entry <excludeEntry>', 'when in workspace mode, build the exclude package')
     .option('-ej, --enable-json-plugin', 'enable @rollup/plugin-json', false)
+    .option('-eb, --enable-browser', 'enable browser support')
     .option('-tc, --tsconfig <tsconfig>', 'specify the path to the TypeScript configuration file', 'tsconfig.json')
-    .option('-i, --input <input>', 'specify the entry file for the build.', 'index.ts')
+    .option('-i, --input [input...]', 'specify the entry file for the build.', ['index.ts'])
     .option('-ip, --input-prefix <inputPrefix>', 'specify the path prefix for the entry file.', '')
     .option(
       '-b, --banner-text <bannerText>',
@@ -31,10 +36,31 @@ function buildCommandArgs(command: Command) {
     )
     .option('-s, --enable-sourcemap', 'enable output sourcemap')
     .option('-et, --external [packages...]', 'build external package')
-    .option('-ee, --external-each-other', 'when workspace mode, all model as external each other.', true)
+    .option('-ee, --external-each-other', 'when workspace mode, all package as external each other.', true)
     .option('-cp, --copy [files...]', 'copy files', ['README.md', 'LICENSE', 'CHANGELOG.md'])
     .option('-bf, --build-format [fileFormat...]', 'build file format. eg: es,umd,cjs', ['es', 'umd', 'cjs'])
-    .option('-m, --minify [minify...]');
+    .option('-m, --minify [minify]', 'bundle file need minify');
+}
+
+/**
+ * build directory
+ *
+ * @param command
+ */
+function buildDirectory(command: Command) {
+  return command
+    .option('-w, --workspace [workspace...]', 'enable workspace mode and input the working directory')
+    .option('-op, --output-prefix <outputPrefx>', 'Specify the directory prefix for the output.', 'dist');
+}
+
+/**
+ * package filter entry
+ * @param command
+ */
+function buildPackageFilter(command: Command) {
+  return command
+    .option('-f, --only-entry <onlyEntry>', 'when in workspace mode, only build the specified package')
+    .option('-e, --exclude-entry <excludeEntry>', 'when in workspace mode, build the exclude package');
 }
 
 /**
@@ -56,25 +82,33 @@ function createCommandAction(
 /**
  * build command
  */
-createCommandAction('build', 'building your library', [buildDirectory, buildCommandArgs]).action(function (
-  option: ICliBuildDirectory & ICliBuild,
-  command
-) {
-  debugger
-});
+createCommandAction('build', 'building your library', [buildDirectory, buildCommandArgs, buildPackageFilter]).action(
+  function (option: ICliBuildDirectory & ICliBuild, command) {}
+);
 
 /**
  * dev command
  */
-createCommandAction('dev', 'watch file changes and build in real-time', [buildDirectory, buildCommandArgs]).action(
-  function (option, command) {}
-);
+createCommandAction('dev', 'watch file changes and build in real-time', [
+  buildDirectory,
+  buildCommandArgs,
+  buildPackageFilter,
+]).action(function (option, command) {});
 
 /**
  * clean command
  */
-createCommandAction('clean', 'clean build artifacts', [buildDirectory]).action(function (option: ICliBuildDirectory, command) {
-
+createCommandAction('clean', 'clean build artifacts', [buildDirectory, buildPackageFilter]).action(async function (
+  option: ICliBuildDirectory & ICliEnterFilter,
+  command
+) {
+  const allPackages = await scanAllPackages(option.workspace || '.');
+  const filterPackages = filteredPackages(allPackages, option);
+  await clearDirs(
+    filterPackages.map((i) => {
+      return join(i.fullPath, option.outputPrefix || '');
+    })
+  );
 });
 
 command.parse();

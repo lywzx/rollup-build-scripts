@@ -20,6 +20,7 @@ yarn add @lywzx/rollup-build-scripts --dev // 或 npm install @lywzx/rollup-buil
 
 下面是一些通用参数，可以
 
+* -w 指定当前
 
 支持在命令行中传递参数：
 

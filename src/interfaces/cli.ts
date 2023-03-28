@@ -4,7 +4,7 @@ export interface ICliBuildDirectory {
    */
   workspace?: string[];
   /**
-   * library output directory
+   * the build archive output directory
    */
   outputPrefix: string;
 }

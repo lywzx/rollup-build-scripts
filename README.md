@@ -13,9 +13,13 @@ yarn add @lywzx/rollup-build-scripts --dev // 或 npm install @lywzx/rollup-buil
 在package.json中，scripts字段，添加如下配置：
 
 ```
-"dev": "node --max_old_space_size=8192 node_modules/rollup/dist/bin/rollup -c node_modules/@lywzx/rollup-build-scripts/rollup.config.js -w",
-"build": "node --max-old-space-size=8192 node_modules/@lywzx/rollup-build-scripts/index.js",
+"dev": "npx rbs dev",
+"build": "npx rbs build",
+"clean": "npx rbs clean"
 ```
+
+下面是一些通用参数，可以
+
 
 支持在命令行中传递参数：
 

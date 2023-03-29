@@ -22,7 +22,6 @@ yarn add @lywzx/rollup-build-scripts --dev // 或 npm install @lywzx/rollup-buil
 
 命令行中，所有的参数均支持`--camelCase`和`--camel-case`两种风格。
 
-
 ### 获得帮助
 
 执行
@@ -37,7 +36,7 @@ yarn add @lywzx/rollup-build-scripts --dev // 或 npm install @lywzx/rollup-buil
 | 参数   | 完整参数                  | 示例                                              | 备注                                                                  |
 |------|-----------------------|-------------------------------------------------|---------------------------------------------------------------------|
 | -w   | --workspace           | npx rbs build -w packages -w src                | 指定工作区，默认情况下会根据package.json中workspace字段判断                            |
-| -opr | --output-root-path    | npx rbs build -opr root/path                    | 指定输出的根目录。输出的结果，将会以包名输出到指定目录。当此参数存在，`--output-prefix`参数将不起作用         |
+| -orp | --output-root-path    | npx rbs build -orp root/path                    | 指定输出的根目录。输出的结果，将会以包名输出到指定目录。当此参数存在，`--output-prefix`参数将不起作用         |
 | -op  | --output-prefix       | npx rbs build -op dist                          | 指定构建产物输出位置（相对于包的位置）；默认值为: `dist`                                    |
 | -c   | --config              | npx rbs build -c .rollup.config.js              | 指定rbs命令行配置文件                                                        |
 | -ts  | --enable-typescript   | npx rbs build -ts                               | 是否启用typescript语法支持，默认会判断目录下是否存<br/>在tsconfig.json自行确认是否启用typescript |
@@ -130,5 +129,5 @@ module.exports = {
 通常项目开发过程，需要与其他项目联调，需要将修改的内容，构建后输入到某个目录，可以使用如下命令(假定完成了上面的配置工作):
 
 ```bash
-yarn dev --output-root-path=../project-demo/node_modules --only-package=@test/package1,@test/package2
+yarn dev -output-root-path=../project-demo/node_modules -only-package=@test/package1 -op=@test/package2
 ```

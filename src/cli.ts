@@ -50,6 +50,7 @@ function buildCommandArgs(command: Command) {
 function buildDirectory(command: Command) {
   return command
     .option('-w, --workspace [workspace...]', 'enable workspace mode and input the working directory')
+    .option('orp, --output-root-path <outputRootPath>', 'Specify the root directory for the output')
     .option('-op, --output-prefix <outputPrefx>', 'Specify the directory prefix for the output.', 'dist');
 }
 

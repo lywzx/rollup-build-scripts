@@ -34,7 +34,7 @@ function buildCommandArgs(command: Command) {
  * @license <%= package.license %>
  */`
     )
-    .option('-s, --enable-sourcemap', 'enable output sourcemap')
+    .option('-es, --enable-sourcemap', 'enable output sourcemap')
     .option('-et, --external [packages...]', 'build external package')
     .option('-ee, --external-each-other', 'when workspace mode, all package as external each other.', true)
     .option('-cp, --copy [files...]', 'copy files', ['README.md', 'LICENSE', 'CHANGELOG.md'])
@@ -59,8 +59,8 @@ function buildDirectory(command: Command) {
  */
 function buildPackageFilter(command: Command) {
   return command
-    .option('-f, --only-entry <onlyEntry>', 'when in workspace mode, only build the specified package')
-    .option('-e, --exclude-entry <excludeEntry>', 'when in workspace mode, build the exclude package');
+    .option('-op, --only-package <onlyPackage>', 'when in workspace mode, only build the specified package')
+    .option('-ep, --exclude-package <excludePackage>', 'when in workspace mode, build the exclude package');
 }
 
 /**

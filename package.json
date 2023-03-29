@@ -12,7 +12,7 @@
     "access": "public"
   },
   "scripts": {
-    "cli": "npx ts-node src/cli.ts clean",
+    "cli": "npx ts-node src/cli.ts",
     "build": "rm -rf ./dist && tsc && cp package.json ./dist && cp README.md ./dist",
     "format": "prettier --write \"+(src)/**/*.ts\"",
     "test": "mocha",

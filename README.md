@@ -129,5 +129,5 @@ module.exports = {
 通常项目开发过程，需要与其他项目联调，需要将修改的内容，构建后输入到某个目录，可以使用如下命令(假定完成了上面的配置工作):
 
 ```bash
-yarn dev -output-root-path=../project-demo/node_modules -only-package=@test/package1 -op=@test/package2
+yarn dev --output-root-path=../project-demo/node_modules --only-package=@test/package1 --only-package=@test/package2
 ```

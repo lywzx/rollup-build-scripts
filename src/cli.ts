@@ -2,7 +2,7 @@ import { Command, createCommand } from 'commander';
 import { ICliBuild, ICliBuildDirectory, ICliEnterFilter } from './interfaces/cli';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { filteredPackages, scanAllPackages } from './util/package';
+import { filteredPackages, scanAllPackages } from './util';
 import { clearDirs } from './util';
 
 const packageInfo = JSON.parse(readFileSync(join(__dirname, '../package.json'), { encoding: 'utf-8' }));

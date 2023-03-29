@@ -46,7 +46,7 @@ yarn add @lywzx/rollup-build-scripts --dev // 或 npm install @lywzx/rollup-buil
 | -tc  | --tsconfig            | npx rbs build --tsconfig tsconfig.override.json | 指定typescript构建时的配置文件                                                |
 | -i   | --input               | npx rbs build -i index.ts                       | 指定构建时，入口文件                                                          |
 | -ip  | --input-prefix        | npx rbs build -ip src                           | 指定构建时，入口文件目录前缀                                                      |
-| -b   | --banner              | npx rbs build -b '/** <=package.name> */'       | 构建后的文件顶部，填写的注释信息。支持一些变量，来源主要是package.json                           |
+| -b   | --banner-text         | npx rbs build -b '/** <=package.name> */'       | 构建后的文件顶部，填写的注释信息。支持一些变量，来源主要是package.json                           |
 | -es  | --enable-sourcemap    | npx rbs build -es                               | 输出结果后，生成sourcemap文件                                                 |
 | -et  | --external            | npx rbs build -et lodash -et vue                | 将某个包指定为external                                                     |
 | -ee  | --external-each-other | npx rbs build -ee                               | 当使用多包模式时，多个包之间作为external                                            |

@@ -7,6 +7,10 @@ export interface ICliBuildDirectory {
    * the build archive output directory
    */
   outputPrefix: string;
+  /**
+   * Specify the directory prefix for the output
+   */
+  outputRootPath?: string;
 }
 
 export interface ICliBuild {
@@ -67,7 +71,7 @@ export interface ICliBuild {
   /**
    * bundle format
    */
-  bf?: Array<'es' | 'umd' | 'cjs'>;
+  buildFormat?: Array<'es' | 'umd' | 'cjs'>;
   /**
    * need compress file
    */
@@ -78,9 +82,9 @@ export interface ICliEnterFilter {
   /**
    * only build these packages
    */
-  onlyEntry?: string[];
+  onlyPackage?: string[];
   /**
    * all package exclude these packages will build
    */
-  excludeEntry?: string[];
+  excludePackage?: string[];
 }

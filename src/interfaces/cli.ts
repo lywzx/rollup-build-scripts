@@ -11,6 +11,11 @@ export interface ICliBuildDirectory {
    * Specify the directory prefix for the output
    */
   outputRootPath?: string;
+  /**
+   * scan depth of directory structure
+   * @default 3
+   */
+  directoryDepth?: number;
 }
 
 export interface ICliBuild {

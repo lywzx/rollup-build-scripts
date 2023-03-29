@@ -1,6 +1,5 @@
 import { IPackageConfig, IRollupConfig, IEntryOption } from '../interfaces';
-import { filterEntryByRollupConfigEntryFilter, filterEntryByString, isFile, isIRollupConfigEntryFilter } from '../util';
-import { argv } from '../argv';
+import { isFile } from '../util';
 import { isString, isArray } from 'lodash';
 import { join } from 'path';
 

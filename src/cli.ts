@@ -1,8 +1,8 @@
 import { Command, createCommand } from 'commander';
-import { ICliBuild, ICliBuildDirectory, ICliEnterFilter } from './interfaces/cli';
+import { ICliBuild, ICliBuildDirectory, ICliEnterFilter } from './interfaces';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { filteredPackages, scanAllPackages } from './util';
+import { filteredPackages, scanWorkspacePackages } from './util';
 import { clearDirs } from './util';
 
 const packageInfo = JSON.parse(readFileSync(join(__dirname, '../package.json'), { encoding: 'utf-8' }));
@@ -51,7 +51,8 @@ function buildDirectory(command: Command) {
   return command
     .option('-w, --workspace [workspace...]', 'enable workspace mode and input the working directory')
     .option('orp, --output-root-path <outputRootPath>', 'Specify the root directory for the output')
-    .option('-op, --output-prefix <outputPrefx>', 'Specify the directory prefix for the output.', 'dist');
+    .option('-op, --output-prefix <outputPrefx>', 'Specify the directory prefix for the output.', 'dist')
+    .option('-dd, --directory-depth <directoryDepth>', 'scan directory dept', '3');
 }
 
 /**
@@ -103,7 +104,7 @@ createCommandAction('clean', 'clean build artifacts', [buildDirectory, buildPack
   option: ICliBuildDirectory & ICliEnterFilter,
   command
 ) {
-  const allPackages = await scanAllPackages(option.workspace || '.');
+  const allPackages = await scanWorkspacePackages(option.workspace || '.');
   const filterPackages = filteredPackages(allPackages, option);
   await clearDirs(
     filterPackages.map((i) => {

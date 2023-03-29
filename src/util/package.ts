@@ -1,9 +1,8 @@
-import { IPackageConfig } from '../interfaces';
+import { IPackageConfig, ICliEnterFilter } from '../interfaces';
 import castArray from 'lodash/castArray';
 import { isFile } from './dir';
 import { join } from 'path';
 import { readFile, readdir, stat } from './fs';
-import { ICliEnterFilter } from '../interfaces/cli';
 
 /**
  *
@@ -11,9 +10,9 @@ import { ICliEnterFilter } from '../interfaces/cli';
  * @param maxLevel
  * @param excludeDirectory
  */
-export async function scanAllPackages(
+export async function scanWorkspacePackages(
   workspaces: string[] | string,
-  { maxLevel = 2, excludeDirectories = ['node_modules'] } = {}
+  { maxLevel = 3, excludeDirectories = ['node_modules'] } = {}
 ): Promise<IPackageConfig[]> {
   const stacks = castArray(workspaces).map((workspace) => {
     return {
@@ -77,10 +76,10 @@ export async function scanAllPackages(
  * @param filter
  */
 export function filteredPackages(packages: IPackageConfig[], filter: ICliEnterFilter) {
-  const { onlyEntry = [], excludeEntry = [] } = filter;
+  const { onlyPackage = [], excludePackage = [] } = filter;
 
-  const onlyRegExp = onlyEntry.map((i) => new RegExp(i));
-  const excludeRegExp = excludeEntry.map((i) => new RegExp(i));
+  const onlyRegExp = onlyPackage.map((i) => new RegExp(i));
+  const excludeRegExp = excludePackage.map((i) => new RegExp(i));
 
   return packages.filter((pkg) => {
     if (excludeRegExp.some((reg) => reg.test(pkg.packageName))) {

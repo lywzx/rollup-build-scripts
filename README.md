@@ -61,7 +61,7 @@ yarn add @lywzx/rollup-build-scripts --dev // 或 npm install @lywzx/rollup-buil
 
 ```typescript
 /**
- * @type {import('@lywzx/rollup-build-scripts').IRollupConfig}
+ * @type {import('@lywzx/rollup-build-scripts').RbsConfig}
  */
 module.exports = {
     ts: true,

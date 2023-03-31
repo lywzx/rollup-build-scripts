@@ -81,6 +81,10 @@ export interface ICliBuild {
    * need compress file
    */
   minify?: boolean;
+  /**
+   * load file extension
+   */
+  extension: string[];
 }
 
 export interface ICliEnterFilter {

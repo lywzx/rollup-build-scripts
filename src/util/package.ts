@@ -1,4 +1,4 @@
-import { IPackageConfig, ICliEnterFilter } from '../interfaces';
+import { ICliEnterFilter, IPackageConfig } from '../interfaces';
 import castArray from 'lodash/castArray';
 import { isFile } from './dir';
 import { join } from 'path';
@@ -71,7 +71,7 @@ export async function scanWorkspacePackages(
 }
 
 /**
- *
+ * filter exists package
  * @param packages
  * @param filter
  */

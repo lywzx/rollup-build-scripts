@@ -19,8 +19,17 @@ export interface IGuessConfigPathOption {
 }
 
 export interface IGuessConfigValidateOption {
+  /**
+   * path
+   */
   path: string;
+  /**
+   * current file name
+   */
   filename: string;
+  /**
+   * current level
+   */
   level: number;
 }
 
@@ -34,11 +43,11 @@ export interface IScanStackItem {
  * @param option
  * @param validate
  */
-export async function guessConfigPath(option: IGuessConfigPathOption = {}, validate: IScanStackItem = {}): Promise<string | undefined> {
-  const {
-    filename = [],
-    root = process.cwd(),
-  } = option;
+export async function guessConfigPath(
+  option: IGuessConfigPathOption = {},
+  validate: IScanStackItem = {}
+): Promise<string | undefined> {
+  const { filename = [], root = process.cwd() } = option;
 
   const {
     validatedResult = (current) => {
@@ -47,19 +56,19 @@ export async function guessConfigPath(option: IGuessConfigPathOption = {}, valid
     },
     validatedContinue = (current) => {
       return current.level < 3;
-    }
+    },
   } = validate;
 
   const defaultFilename = castArray(filename);
 
-  const generateStack = (data: Omit<IGuessConfigValidateOption, 'filename'> ): Array<IGuessConfigValidateOption> => {
-    return defaultFilename.map(filename => {
+  const generateStack = (data: Omit<IGuessConfigValidateOption, 'filename'>): Array<IGuessConfigValidateOption> => {
+    return defaultFilename.map((filename) => {
       return {
         ...data,
         filename,
       };
     });
-  }
+  };
 
   const stack = generateStack({
     path: root,
@@ -72,14 +81,15 @@ export async function guessConfigPath(option: IGuessConfigPathOption = {}, valid
       return join(currentStack.path, currentStack.filename);
     }
     if (validatedContinue(currentStack)) {
-      stack.push(...generateStack({
-        level: currentStack.level + 1,
-        path: normalize(join(currentStack.path, '..')),
-      }));
+      stack.push(
+        ...generateStack({
+          level: currentStack.level + 1,
+          path: normalize(join(currentStack.path, '..')),
+        })
+      );
     }
   }
 }
-
 
 /**
  * find .rollup.config.js config file
@@ -87,8 +97,29 @@ export async function guessConfigPath(option: IGuessConfigPathOption = {}, valid
  * @param root
  * @param scanLevel
  */
-export function guessRbsConfigPath(filename: string | string[] = ['ts', 'js'].map(i => `.rollup.config.${i}`), root = process.cwd(), scanLevel = 3) {
-  return guessConfigPath({filename, root}, {validatedContinue: (current) => current.level < scanLevel})
+export function guessRbsConfigPath(
+  filename: string | string[] = ['ts', 'js'].map((i) => `.rollup.config.${i}`),
+  root = process.cwd(),
+  scanLevel = 3
+) {
+  return guessConfigPath({ filename, root }, { validatedContinue: (current) => current.level < scanLevel });
+}
+
+/**
+ * scan relative package.json file
+ * @param root
+ * @param scanLevel
+ */
+export function guessRelativePackageJson(root = process.cwd(), scanLevel = 3) {
+  return guessConfigPath(
+    {
+      filename: 'package.json',
+      root,
+    },
+    {
+      validatedContinue: (current) => current.level < scanLevel,
+    }
+  );
 }
 
 /**
@@ -97,35 +128,30 @@ export function guessRbsConfigPath(filename: string | string[] = ['ts', 'js'].ma
  * @param scanLevel
  */
 export async function guessRbsRootPackageJson(root = process.cwd(), scanLevel = 3) {
-  const workspacePackageJson = await guessConfigPath({
-    filename: 'package.json',
-    root,
-  }, {
-    validatedResult: async (current) => {
-      const filePath = join(current.path, current.filename);
-      if (await isFile(filePath)) {
-        const fileContent = await readFile(filePath, { encoding: 'utf-8' });
-        const data = JSON.parse(fileContent);
-        if (typeof data === 'object' && data.private && data.workspace && data.workspace.length) {
-          return true;
-        }
-      }
-      return false;
+  const workspacePackageJson = await guessConfigPath(
+    {
+      filename: 'package.json',
+      root,
     },
-    validatedContinue: (current) => current.level < scanLevel,
-  });
+    {
+      validatedResult: async (current) => {
+        const filePath = join(current.path, current.filename);
+        if (await isFile(filePath)) {
+          const fileContent = await readFile(filePath, { encoding: 'utf-8' });
+          const data = JSON.parse(fileContent);
+          if (typeof data === 'object' && data.private && data.workspace && data.workspace.length) {
+            return true;
+          }
+        }
+        return false;
+      },
+      validatedContinue: (current) => current.level < scanLevel,
+    }
+  );
 
   if (workspacePackageJson) {
     return workspacePackageJson;
   }
 
-  return guessConfigPath({
-    filename: 'package.json',
-    root,
-  }, {
-    validatedContinue: (current) => current.level < scanLevel,
-  });
+  return guessRelativePackageJson(root, scanLevel);
 }
-
-
-

@@ -1,4 +1,4 @@
-import { IPackageConfig, IRollupConfig, IEntryOption } from '../interfaces';
+import { IPackageConfig, RbsConfig, IEntryOption } from '../interfaces';
 import { isFile } from '../util';
 import { isString, isArray } from 'lodash';
 import { join } from 'path';
@@ -44,7 +44,7 @@ export function parseValueToString(option?: string | string[]): Array<string | R
  * @param file
  * @param root
  */
-export async function loadRollupConfig(file = '.rollup.config.js', root = process.cwd()): Promise<IRollupConfig> {
+export async function loadRollupConfig(file = '.rollup.config.js', root = process.cwd()): Promise<RbsConfig> {
   const realPath = join(root, file);
   const config = (await isFile(realPath)) ? require(realPath) : argv;
   const enableTs = argv.ts ?? config.ts ?? false;
@@ -101,5 +101,5 @@ export async function loadRollupConfig(file = '.rollup.config.js', root = proces
       return true;
     },
     handleConfig: config.handleConfig,
-  } as IRollupConfig;
+  } as RbsConfig;
 }

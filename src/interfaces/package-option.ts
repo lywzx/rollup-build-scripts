@@ -20,17 +20,15 @@ export interface IDtsRollupConfig {
   output?: string;
 }
 
-export interface IRollupConfig {
-  /**
-   * 是否watch模式
-   * dev
-   */
-  watch: boolean;
+/**
+ * rbs config interface
+ */
+export interface RbsConfig {
   /**
    * 是否启用typescript构建
    * 默认：true
    */
-  ts: boolean;
+  enableTypescript: boolean;
   /**
    * 是否启用dts合并
    * 如果ts为true时
@@ -53,7 +51,7 @@ export interface IRollupConfig {
   /**
    * 构建的入口文件
    */
-  input?: string;
+  input?: string | string[];
   /**
    * 构建时input的前缀
    * 比如放在包的src目录，可以填写为 src
@@ -67,28 +65,23 @@ export interface IRollupConfig {
    * 包中文件的输出路径
    * 比如：所有构建代码需要放到library目录
    */
-  outLibrary?: string;
+  outputLibrary?: string;
   /**
    * 输出的目录，
    * 仅当outRootPath不存在时，起作用
    */
-  outPrefix?: string;
+  outputPrefix?: string;
   /**
    * 输出的根目录，
    * 将会按照包名来生成目录，
    * 适用将包输入到某个项目的node_modules
    */
-  outRootPath?: string;
-  /**
-   * rollup安装的目录
-   * @deprecated
-   */
-  rollupPath?: string;
+  outputRootPath?: string;
   /**
    * 当为workspace模式时，
    * 可以填写此值
    */
-  workspace?: string[];
+  workspace?: string | string[];
   /**
    * 只构建以下列举的包
    */
@@ -101,17 +94,17 @@ export interface IRollupConfig {
   /**
    * 如果配置buble
    */
-  buble?: RollupBubleOptions;
+  buble?: RollupBubleOptions | ((input: IEntryOption, pkg: IPackageConfig) => Promise<RollupBubleOptions>);
   /**
    * commonjs 默认配置
    */
-  commonjs?: RollupCommonJSOptions;
+  commonjs?: RollupCommonJSOptions | ((input: IEntryOption, pkg: IPackageConfig) => Promise<RollupBubleOptions>);
   /**
    * @rollup/plugin-replace 插件配置
    * @param input
    * @param pkg
    */
-  replace?: RollupReplaceOptions | ((input: IEntryOption, pkg: IPackageConfig) => RollupReplaceOptions);
+  replace?: RollupReplaceOptions | ((input: IEntryOption, pkg: IPackageConfig) => Promise<RollupReplaceOptions>);
   /**
    * 默认查找的扩展名
    */

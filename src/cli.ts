@@ -2,8 +2,7 @@ import { Command, createCommand } from 'commander';
 import { ICliBuild, ICliBuildDirectory, ICliEnterFilter } from './interfaces';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { filteredPackages, scanWorkspacePackages } from './util';
-import { clearDirs } from './util';
+import { clean } from './index';
 
 const packageInfo = JSON.parse(readFileSync(join(__dirname, '../package.json'), { encoding: 'utf-8' }));
 
@@ -39,7 +38,8 @@ function buildCommandArgs(command: Command) {
     .option('-ee, --external-each-other', 'when workspace mode, all package as external each other.', true)
     .option('-cp, --copy [files...]', 'copy files', ['README.md', 'LICENSE', 'CHANGELOG.md'])
     .option('-bf, --build-format [fileFormat...]', 'build file format. eg: es,umd,cjs', ['es', 'umd', 'cjs'])
-    .option('-m, --minify [minify]', 'bundle file need minify');
+    .option('-m, --minify [minify]', 'bundle file need minify')
+    .option('--ext, --extension [extension...]', 'file extensions');
 }
 
 /**
@@ -51,6 +51,7 @@ function buildDirectory(command: Command) {
   return command
     .option('-w, --workspace [workspace...]', 'enable workspace mode and input the working directory')
     .option('orp, --output-root-path <outputRootPath>', 'Specify the root directory for the output')
+    .option('opi, --output-library <ouputLibraryPath>', 'specify the directory prefix for the package')
     .option('-op, --output-prefix <outputPrefx>', 'Specify the directory prefix for the output.', 'dist')
     .option('-dd, --directory-depth <directoryDepth>', 'scan directory dept', '3');
 }
@@ -104,13 +105,7 @@ createCommandAction('clean', 'clean build artifacts', [buildDirectory, buildPack
   option: ICliBuildDirectory & ICliEnterFilter,
   command
 ) {
-  const allPackages = await scanWorkspacePackages(option.workspace || '.');
-  const filterPackages = filteredPackages(allPackages, option);
-  await clearDirs(
-    filterPackages.map((i) => {
-      return join(i.fullPath, option.outputPrefix || '');
-    })
-  );
+  return clean(option);
 });
 
 command.parse();

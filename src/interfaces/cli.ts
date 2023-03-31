@@ -12,6 +12,10 @@ export interface ICliBuildDirectory {
    */
   outputRootPath?: string;
   /**
+   * output library
+   */
+  outputLibraryPath?: string;
+  /**
    * scan depth of directory structure
    * @default 3
    */

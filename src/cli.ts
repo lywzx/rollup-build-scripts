@@ -3,6 +3,7 @@ import { ICliBuild, ICliBuildDirectory, ICliEnterFilter } from './interfaces';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { clean } from './index';
+import { guessRbsBuildDirectoryConfig } from './util/merge-rbs-config';
 
 const packageInfo = JSON.parse(readFileSync(join(__dirname, '../package.json'), { encoding: 'utf-8' }));
 
@@ -105,7 +106,12 @@ createCommandAction('clean', 'clean build artifacts', [buildDirectory, buildPack
   option: ICliBuildDirectory & ICliEnterFilter,
   command
 ) {
-  return clean(option);
+  const opt = await guessRbsBuildDirectoryConfig({
+    ...option,
+    rootPath: process.cwd(),
+  });
+
+  return clean(opt);
 });
 
 command.parse();

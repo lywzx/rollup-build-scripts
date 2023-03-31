@@ -12,7 +12,7 @@ import { readFile, readdir, stat } from './fs';
  */
 export async function scanWorkspacePackages(
   workspaces: string[] | string,
-  { maxLevel = 3, excludeDirectories = ['node_modules'] } = {}
+  { maxLevel = 3, excludeDirectories = ['node_modules'], rootPath = process.cwd() } = {}
 ): Promise<IPackageConfig[]> {
   const stacks = castArray(workspaces).map((workspace) => {
     return {
@@ -25,7 +25,7 @@ export async function scanWorkspacePackages(
   const result: IPackageConfig[] = [];
   let stack: (typeof stacks)[0] | undefined;
   while (!!(stack = stacks.pop())) {
-    const fullPath = join(stack.workspace, stack.dir);
+    const fullPath = join(rootPath, stack.workspace, stack.dir);
     const packageJsonFilePath = join(fullPath, 'package.json');
     if (await isFile(packageJsonFilePath)) {
       const fileContent = JSON.parse(await readFile(packageJsonFilePath, { encoding: 'utf-8' }));

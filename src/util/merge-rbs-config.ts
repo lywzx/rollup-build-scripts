@@ -62,9 +62,10 @@ export async function guessRbsConfigFromConfigFile(rootPath: string): Promise<Cl
  * @param option
  */
 export async function guessRbsBuildDirectoryConfig(option: CleanOption): Promise<CleanOption> {
-  const rollupConfigFile = await guessRbsConfigPath(undefined, option.rootPath);
-  if (rollupConfigFile) {
-  }
+  // 默认配置信息
+  const config = await guessRbsConfigFromConfigFile(option.rootPath);
+
+  // todo merge cli config
 
   return option;
 }

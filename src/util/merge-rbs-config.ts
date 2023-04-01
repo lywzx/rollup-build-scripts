@@ -19,7 +19,7 @@ export async function guessRbsConfigFromConfigFile(rootPath: string): Promise<Cl
   const rollupConfigFile = await guessRbsConfigPath(undefined, rootPath);
   const result: CleanOption = {
     rootPath: '',
-    outputPrefix: '',
+    outputPrefix: 'dist',
   };
   if (rollupConfigFile) {
     // eslint-disable-next-line @typescript-eslint/no-var-requires

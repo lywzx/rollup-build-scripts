@@ -65,7 +65,21 @@ export async function guessRbsBuildDirectoryConfig(option: CleanOption): Promise
   // 默认配置信息
   const config = await guessRbsConfigFromConfigFile(option.rootPath);
 
-  // todo merge cli config
+  (
+    [
+      'workspace',
+      'outputPrefix',
+      'outputRootPath',
+      'outputLibraryPath',
+      'directoryDepth',
+      'onlyPackage',
+      'excludePackage',
+    ] as Array<keyof CleanOption>
+  ).forEach((key) => {
+    if (typeof option[key] !== 'undefined') {
+      (config[key] as unknown) = option[key];
+    }
+  });
 
   return option;
 }

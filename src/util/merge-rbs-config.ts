@@ -1,9 +1,8 @@
-import { ICliBuildDirectory, ICliEnterFilter } from '../interfaces';
+import { ICliBuild, ICliBuildDirectory, ICliEnterFilter } from '../interfaces';
 import { guessRbsConfigPath, guessRbsRootPackageJson } from './guess-args';
 import { dirname, join, sep } from 'path';
 import { readFile } from './fs';
 import { isFile } from './dir';
-import { castArray } from './helper';
 
 export type CleanOption = ICliBuildDirectory &
   ICliEnterFilter & {
@@ -64,9 +63,7 @@ export async function guessRbsConfigFromConfigFile(currentPath: string): Promise
     ) {
       const currentPackage = await readFile(join(currentPath, 'package.json'), { encoding: 'utf-8' });
       const packageContent = JSON.parse(currentPackage);
-      result.onlyPackage = result.onlyPackage
-        ? castArray(result.onlyPackage).concat(packageContent.name)
-        : [packageContent.name];
+      result.onlyPackage = [packageContent.name];
     }
   }
 
@@ -98,4 +95,24 @@ export async function guessRbsBuildDirectoryConfig(option: CleanOption): Promise
   });
 
   return config;
+}
+
+export type BuildOption = ICliBuildDirectory & ICliBuild & ICliEnterFilter & {
+  /**
+   * root directory
+   */
+  rootPath: string;
+};
+
+/**
+ * guess build option
+ * @param option
+ */
+export async function guessRbsBuildOptionConfig(option: BuildOption): Promise<BuildOption> {
+  const directoryOption = await guessRbsBuildDirectoryConfig(option);
+
+  return {
+    ...option,
+    ...directoryOption,
+  };
 }

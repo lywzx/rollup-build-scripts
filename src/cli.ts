@@ -2,8 +2,8 @@ import { Command, createCommand } from 'commander';
 import { ICliBuild, ICliBuildDirectory, ICliEnterFilter } from './interfaces';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { clean } from './index';
-import { guessRbsBuildDirectoryConfig } from './util/merge-rbs-config';
+import { build, clean } from './index';
+import { guessRbsBuildDirectoryConfig, guessRbsBuildOptionConfig } from './util/merge-rbs-config';
 
 const packageInfo = JSON.parse(readFileSync(join(__dirname, '../package.json'), { encoding: 'utf-8' }));
 
@@ -87,7 +87,13 @@ function createCommandAction(
  * build command
  */
 createCommandAction('build', 'building your library', [buildDirectory, buildCommandArgs, buildPackageFilter]).action(
-  function (option: ICliBuildDirectory & ICliBuild, command) {}
+  async function (option: ICliBuildDirectory & ICliBuild & ICliEnterFilter, command) {
+    const opt = await guessRbsBuildOptionConfig({
+      ...option,
+      rootPath: process.cwd(),
+    });
+    return build(opt);
+  }
 );
 
 /**

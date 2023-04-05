@@ -1,6 +1,5 @@
-import { clearDirs, filteredPackages, scanWorkspacePackages } from '../util';
+import { clearDirs, filteredPackages, scanWorkspacePackages, CleanOption } from '../util';
 import { join } from 'path';
-import { CleanOption } from '../util/merge-rbs-config';
 
 /**
  * clean directory

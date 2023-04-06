@@ -1,4 +1,4 @@
-import { ICliBuild, ICliBuildDirectory, ICliEnterFilter } from '../interfaces';
+import { ICliBuild, ICliBuildDirectory, ICliEnterFilter, RbsConfig } from '../interfaces';
 import { guessRbsConfigPath, guessRbsRootPackageJson } from './guess-args';
 import { dirname, join, sep } from 'path';
 import { readFile } from './fs';
@@ -97,7 +97,7 @@ export async function guessRbsBuildDirectoryConfig(option: CleanOption): Promise
   return config;
 }
 
-export type BuildOption = ICliBuildDirectory & ICliBuild & ICliEnterFilter & {
+export type BuildPureOption = ICliBuild & {
   /**
    * root directory
    */
@@ -105,14 +105,52 @@ export type BuildOption = ICliBuildDirectory & ICliBuild & ICliEnterFilter & {
 };
 
 /**
+ * build option
+ */
+export type BuildOption = BuildPureOption & ICliEnterFilter & ICliBuildDirectory;
+
+/**
+ * build args config
+ * @param option
+ */
+export async function guessRbsBuildPureOptionConfig(option: BuildPureOption): Promise<ICliBuild> {
+  const configFilePath = await guessRbsConfigPath(undefined, option.rootPath, 1);
+
+  const result: BuildPureOption = {
+    extension: [],
+    rootPath: option.rootPath,
+  };
+
+  if (configFilePath) {
+    const content: RbsConfig = require(configFilePath);
+
+    ([
+      'enableTypescript',
+      'extensions',
+      'external',
+      'externalEachOther',
+    ] as Array<keyof RbsConfig>).forEach((key) => {
+      (result[key as keyof BuildPureOption] as unknown) = content[key];
+    });
+  }
+
+  return result;
+}
+
+/**
  * guess build option
  * @param option
  */
-export async function guessRbsBuildOptionConfig(option: BuildOption): Promise<BuildOption> {
+export async function guessRbsBuildOptionConfig(option: BuildOption): Promise<RbsConfig> {
   const directoryOption = await guessRbsBuildDirectoryConfig(option);
+  const buildOption = await guessRbsBuildPureOptionConfig({
+    ...option,
+    rootPath: directoryOption.rootPath,
+  });
 
   return {
     ...option,
+    ...buildOption,
     ...directoryOption,
   };
 }

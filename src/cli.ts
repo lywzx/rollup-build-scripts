@@ -3,7 +3,7 @@ import { ICliBuild, ICliBuildDirectory, ICliEnterFilter } from './interfaces';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { build, clean } from './index';
-import { guessRbsBuildDirectoryConfig, guessRbsBuildOptionConfig } from './util/merge-rbs-config';
+import { guessRbsBuildDirectoryConfig, guessRbsBuildOptionConfig } from './util';
 
 const packageInfo = JSON.parse(readFileSync(join(__dirname, '../package.json'), { encoding: 'utf-8' }));
 

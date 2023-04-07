@@ -124,12 +124,28 @@ export async function guessRbsBuildPureOptionConfig(option: BuildPureOption): Pr
   if (configFilePath) {
     const content: RbsConfig = require(configFilePath);
 
-    ([
-      'enableTypescript',
-      'extensions',
-      'external',
-      'externalEachOther',
-    ] as Array<keyof RbsConfig>).forEach((key) => {
+    (
+      [
+        'enableTypescript',
+        'tsconfig',
+        'tsconfigOverride',
+        'json',
+        'input',
+        'inputPrefix',
+        'banner',
+        'sourcemap',
+        'buble',
+        'commonjs',
+        'replace',
+        'extensions',
+        'externalEachOther',
+        'external',
+        'outputGlobals',
+        'onlyEntry',
+        'handleCopyPackageJson',
+        'handleConfig',
+      ] as Array<keyof RbsConfig>
+    ).forEach((key) => {
       (result[key as keyof BuildPureOption] as unknown) = content[key];
     });
   }

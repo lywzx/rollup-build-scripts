@@ -1,12 +1,14 @@
+import { ExternalOption } from 'rollup';
+
 export interface ICliBuildDirectory {
   /**
    * assign workspaces
    */
-  workspace?: string[];
+  workspace?: string | string[];
   /**
    * the build archive output directory
    */
-  outputPrefix: string;
+  outputPrefix?: string;
   /**
    * Specify the directory prefix for the output
    */
@@ -52,7 +54,7 @@ export interface ICliBuild {
    * specify the entry file for the build
    * @default ['index.ts']
    */
-  input?: string[];
+  input?: string | string[];
   /**
    * specify the path prefix for the entry file
    */
@@ -68,7 +70,7 @@ export interface ICliBuild {
   /**
    * external package not include in bundle
    */
-  external?: string[];
+  external?: ExternalOption | Record<string, ExternalOption>;
   /**
    * when workspace mode, all package as external each other.
    */
@@ -95,9 +97,9 @@ export interface ICliEnterFilter {
   /**
    * only build these packages
    */
-  onlyPackage?: string[];
+  onlyPackage?: Array<string | RegExp>;
   /**
    * all package exclude these packages will build
    */
-  excludePackage?: string[];
+  excludePackage?: Array<string | RegExp>;
 }

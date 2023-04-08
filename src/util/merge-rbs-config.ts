@@ -3,6 +3,7 @@ import { guessRbsConfigPath, guessRbsRootPackageJson } from './guess-args';
 import { dirname, join, sep } from 'path';
 import { readFile } from './fs';
 import { isFile } from './dir';
+import { castArray } from './helper';
 
 export type CleanOption = ICliBuildDirectory &
   ICliEnterFilter & {
@@ -57,7 +58,7 @@ export async function guessRbsConfigFromConfigFile(currentPath: string): Promise
   // 如果非workspace模式，则表明在某个目录之中
   if (result.workspace && currentPath !== result.rootPath && (await isFile(join(currentPath, 'package.json')))) {
     if (
-      result.workspace.some((workspace) => {
+      castArray(result.workspace).some((workspace) => {
         return new RegExp(`${join(result.rootPath, workspace)}${sep}(?:.*)`).test(currentPath);
       })
     ) {
@@ -113,41 +114,57 @@ export type BuildOption = BuildPureOption & ICliEnterFilter & ICliBuildDirectory
  * build args config
  * @param option
  */
-export async function guessRbsBuildPureOptionConfig(option: BuildPureOption): Promise<ICliBuild> {
+export async function guessRbsBuildPureOptionConfig(option: BuildPureOption): Promise<RbsConfig> {
   const configFilePath = await guessRbsConfigPath(undefined, option.rootPath, 1);
 
-  const result: BuildPureOption = {
-    extension: [],
-    rootPath: option.rootPath,
-  };
+  const result: RbsConfig = {
+    ...option,
+  } as any;
+
+  const keys: Array<keyof RbsConfig> = [
+    'enableTypescript',
+    'enableDts',
+    'tsconfig',
+    'tsconfigOverride',
+    'enableJsonPlugin',
+    'input',
+    'inputPrefix',
+    'bannerText',
+    'enableSourcemap',
+    'enableBrowser',
+    'buble',
+    'commonjs',
+    'replace',
+    'extensions',
+    'externalEachOther',
+    'external',
+    'outputGlobals',
+    'onlyEntry',
+    'handleCopyPackageJson',
+    'handleConfig',
+  ];
 
   if (configFilePath) {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const content: RbsConfig = require(configFilePath);
-
-    (
-      [
-        'enableTypescript',
-        'tsconfig',
-        'tsconfigOverride',
-        'json',
-        'input',
-        'inputPrefix',
-        'banner',
-        'sourcemap',
-        'buble',
-        'commonjs',
-        'replace',
-        'extensions',
-        'externalEachOther',
-        'external',
-        'outputGlobals',
-        'onlyEntry',
-        'handleCopyPackageJson',
-        'handleConfig',
-      ] as Array<keyof RbsConfig>
-    ).forEach((key) => {
-      (result[key as keyof BuildPureOption] as unknown) = content[key];
+    keys.forEach((key) => {
+      if (key in content) {
+        (result[key as keyof RbsConfig] as unknown) = content[key];
+      }
     });
+  }
+
+  keys.forEach((key) => {
+    if (key in option) {
+      (result[key] as unknown) = (option as unknown as any)[key];
+    }
+  });
+
+  // guess logic
+  if (!('enableTypescript' in result)) {
+    if (result.input) {
+      result.enableTypescript = (castArray(result.input)).some(file => /([\S ]+).tsx?$/);
+    }
   }
 
   return result;
@@ -168,5 +185,5 @@ export async function guessRbsBuildOptionConfig(option: BuildOption): Promise<Rb
     ...option,
     ...buildOption,
     ...directoryOption,
-  };
+  } as unknown as RbsConfig;
 }

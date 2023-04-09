@@ -90,7 +90,7 @@ export interface ICliBuild {
   /**
    * load file extension
    */
-  extension: string[];
+  extensions?: string[];
 }
 
 export interface ICliEnterFilter {

@@ -17,7 +17,7 @@ export async function clean(option: CleanOption) {
           return join(option.outputRootPath!, pkg.packageName);
         })
       : filterPackages.map((pkg) => {
-          return join(pkg.fullPath, option.outputPrefix);
+          return join(pkg.fullPath, option.outputPrefix || '');
         });
 
   await clearDirs(clearDirsArray);

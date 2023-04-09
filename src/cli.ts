@@ -40,7 +40,7 @@ function buildCommandArgs(command: Command) {
     .option('-cp, --copy [files...]', 'copy files', ['README.md', 'LICENSE', 'CHANGELOG.md'])
     .option('-bf, --build-format [fileFormat...]', 'build file format. eg: es,umd,cjs', ['es', 'umd', 'cjs'])
     .option('-m, --minify [minify]', 'bundle file need minify')
-    .option('--ext, --extension [extension...]', 'file extensions');
+    .option('--ext, --extensions [extensions...]', 'file extensions');
 }
 
 /**

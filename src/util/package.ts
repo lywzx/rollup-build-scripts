@@ -3,6 +3,9 @@ import castArray from 'lodash/castArray';
 import { isFile } from './dir';
 import { join } from 'path';
 import { readFile, readdir, stat } from './fs';
+import { RollupOptions } from 'rollup';
+import { RbsConfigWithPath } from './merge-rbs-config';
+import { PACKAGE_ENTRY } from '../constant/constant';
 
 /**
  *
@@ -90,4 +93,45 @@ export function filteredPackages(packages: IPackageConfig[], filter: ICliEnterFi
     }
     return true;
   });
+}
+
+/**
+ *
+ * @param packageInfo
+ * @param config
+ */
+export async function transformPackageConfigToRollupConfig(
+  packageInfo: IPackageConfig,
+  config: RbsConfigWithPath
+): Promise<RollupOptions[]> {
+  const result: RollupOptions[] = [];
+
+  //
+  const option: RollupOptions = {
+    input: [],
+    plugins: [],
+    external: [],
+  };
+
+  // 处理input输入内容
+
+  option.input = (
+    await Promise.all(
+      castArray(config.input || PACKAGE_ENTRY).map(async (file) => {
+        const isFileExists = await isFile(join(packageInfo.fullPath, config.inputPrefix || '', file));
+        if (isFileExists) {
+          return file;
+        }
+        return undefined;
+      })
+    )
+  ).filter((i): i is string => {
+    return !!i;
+  });
+
+
+  result.push(option);
+
+  // 处理
+  return result;
 }

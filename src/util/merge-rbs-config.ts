@@ -163,18 +163,20 @@ export async function guessRbsBuildPureOptionConfig(option: BuildPureOption): Pr
   // guess logic
   if (!('enableTypescript' in result)) {
     if (result.input) {
-      result.enableTypescript = (castArray(result.input)).some(file => /([\S ]+).tsx?$/);
+      result.enableTypescript = castArray(result.input).some((file) => /([\S ]+).tsx?$/);
     }
   }
 
   return result;
 }
 
+export type RbsConfigWithPath = RbsConfig & { rootPath: string };
+
 /**
  * guess build option
  * @param option
  */
-export async function guessRbsBuildOptionConfig(option: BuildOption): Promise<RbsConfig> {
+export async function guessRbsBuildOptionConfig(option: BuildOption): Promise<RbsConfigWithPath> {
   const directoryOption = await guessRbsBuildDirectoryConfig(option);
   const buildOption = await guessRbsBuildPureOptionConfig({
     ...option,
@@ -185,5 +187,5 @@ export async function guessRbsBuildOptionConfig(option: BuildOption): Promise<Rb
     ...option,
     ...buildOption,
     ...directoryOption,
-  } as unknown as RbsConfig;
+  } as unknown as RbsConfigWithPath;
 }

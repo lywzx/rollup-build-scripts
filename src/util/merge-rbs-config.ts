@@ -144,19 +144,17 @@ export async function guessRbsBuildPureOptionConfig(option: BuildPureOption): Pr
     'handleConfig',
   ];
 
+  let configFileContent: RbsConfig = {};
   if (configFilePath) {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const content: RbsConfig = require(configFilePath);
-    keys.forEach((key) => {
-      if (key in content) {
-        (result[key as keyof RbsConfig] as unknown) = content[key];
-      }
-    });
+    configFileContent = require(configFilePath) as RbsConfig;
   }
 
   keys.forEach((key) => {
-    if (key in option) {
+    if (key in option && typeof (option as unknown as any)[key] !== 'undefined') {
       (result[key] as unknown) = (option as unknown as any)[key];
+    } else if (key in configFileContent && typeof (configFileContent as unknown as any)[key] !== 'undefined') {
+      (result[key] as unknown) = configFileContent[key];
     }
   });
 

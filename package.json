@@ -13,6 +13,7 @@
   },
   "scripts": {
     "cli": "npx ts-node src/cli.ts",
+    "build-message-lite": "cd ../../company/message-lite && npx /Users/liuyang/Documents/所有项目/rollup-build-scripts/node_modules/.bin/ts-node /Users/liuyang/Documents/所有项目/rollup-build-scripts/src/cli.ts build",
     "build": "rm -rf ./dist && tsc && cp package.json ./dist && cp README.md ./dist",
     "format": "prettier --write \"+(src)/**/*.ts\"",
     "test": "mocha",

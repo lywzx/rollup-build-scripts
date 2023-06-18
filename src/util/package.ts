@@ -114,13 +114,12 @@ export async function transformPackageConfigToRollupConfig(
   };
 
   // 处理input输入内容
-
   option.input = (
     await Promise.all(
       castArray(config.input || PACKAGE_ENTRY).map(async (file) => {
         const isFileExists = await isFile(join(packageInfo.fullPath, config.inputPrefix || '', file));
         if (isFileExists) {
-          return file;
+          return join(config.inputPrefix || '', file);
         }
         return undefined;
       })
@@ -128,7 +127,6 @@ export async function transformPackageConfigToRollupConfig(
   ).filter((i): i is string => {
     return !!i;
   });
-
 
   result.push(option);
 

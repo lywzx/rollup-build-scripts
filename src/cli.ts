@@ -24,7 +24,7 @@ function buildCommandArgs(command: Command) {
     .option('-eb, --enable-browser', 'enable browser support')
     .option('-tc, --tsconfig <tsconfig>', 'specify the path to the TypeScript configuration file', 'tsconfig.json')
     .option('-i, --input [input...]', 'specify the entry file for the build.', ['index.ts'])
-    .option('-ip, --input-prefix <inputPrefix>', 'specify the path prefix for the entry file.', '')
+    .option('-ip, --input-prefix <inputPrefix>', 'specify the path prefix for the entry file.')
     .option(
       '-b, --banner-text <bannerText>',
       'specify build result banner text.',

@@ -18,7 +18,6 @@ export interface IEntryOption {
    *
    */
   transpile?: boolean;
-
   /**
    * 是否支持浏览器
    */

@@ -14,7 +14,7 @@ export async function build(option: RbsConfig & { rootPath: string }) {
   const allRollup: Array<RollupOptions> = [];
   while (!!filterPackages.length) {
     const currentPackage = filterPackages.pop()!;
-    allRollup.push(...(await transformPackageConfigToRollupConfig(currentPackage, option)));
+    allRollup.push(...(await transformPackageConfigToRollupConfig(currentPackage, option, allPackages)));
   }
 
   while (allRollup.length) {

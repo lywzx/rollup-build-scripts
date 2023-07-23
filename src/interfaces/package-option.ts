@@ -26,6 +26,10 @@ export interface IDtsRollupConfig {
  */
 export interface RbsConfig extends ICliEnterFilter, ICliBuild, ICliBuildDirectory {
   /**
+   * 构建文件顶部banner
+   */
+  banner?: string;
+  /**
    * 是否启用dts合并
    * 如果ts为true时
    * 默认自动开启

@@ -3,9 +3,23 @@ import castArray from 'lodash/castArray';
 import { isFile } from './dir';
 import { join } from 'path';
 import { readFile, readdir, stat } from './fs';
-import { RollupOptions } from 'rollup';
+import { ExternalOption, GlobalsOption, OutputOptions, RollupOptions } from 'rollup';
 import { RbsConfigWithPath } from './merge-rbs-config';
 import { PACKAGE_ENTRY } from '../constant/constant';
+import { camelCase, isArray, isFunction, isObject, isRegExp, isString, last, template } from 'lodash';
+import lazy from 'import-lazy';
+
+const importLazy = lazy(require);
+
+const rollupTypescript = importLazy('rollup-plugin-typescript2');
+const json = importLazy('@rollup/plugin-json');
+const buble = importLazy('@rollup/plugin-buble');
+const resolve = importLazy('@rollup/plugin-node-resolve');
+const commonjs = importLazy('@rollup/plugin-commonjs');
+const terser = importLazy('rollup-plugin-terser');
+const replace = importLazy('@rollup/plugin-replace');
+const copy = importLazy('rollup-plugin-copy');
+const dtsPlugin = importLazy('rollup-plugin-dts');
 
 /**
  *
@@ -99,10 +113,12 @@ export function filteredPackages(packages: IPackageConfig[], filter: ICliEnterFi
  *
  * @param packageInfo
  * @param config
+ * @param allPackageInfos
  */
 export async function transformPackageConfigToRollupConfig(
   packageInfo: IPackageConfig,
-  config: RbsConfigWithPath
+  config: RbsConfigWithPath,
+  allPackageInfos: IPackageConfig[]
 ): Promise<RollupOptions[]> {
   const result: RollupOptions[] = [];
 
@@ -111,6 +127,7 @@ export async function transformPackageConfigToRollupConfig(
     input: [],
     plugins: [],
     external: [],
+    output: [],
   };
 
   // 处理input输入内容
@@ -127,6 +144,135 @@ export async function transformPackageConfigToRollupConfig(
   ).filter((i): i is string => {
     return !!i;
   });
+
+  // 处理external
+  if (config.external) {
+    if (
+      isObject(config.external) &&
+      (config.external as Record<string, ExternalOption>)[packageInfo.packageName as string]
+    ) {
+      config.external = (config.external as Record<string, ExternalOption>)[packageInfo.packageName];
+    } else if (
+      isString(config.external) ||
+      isRegExp(config.external) ||
+      isArray(config.external) ||
+      isFunction(config.external)
+    ) {
+      option.external = config.external;
+    }
+  }
+
+  if (config.externalEachOther && (!config.external || isArray(config.external))) {
+    config.external = [
+      ...(config.external || []),
+      ...allPackageInfos.map((it) => it.packageName).filter((it) => it !== packageInfo.packageName),
+    ];
+  }
+
+  if (config.outputGlobals) {
+    (option.output as OutputOptions).globals =
+      (config.outputGlobals as Record<string, GlobalsOption>)[packageInfo.packageName] ?? config.outputGlobals;
+  }
+
+  if (config.buildFormat)
+    if (config.enableTypescript) {
+      /*if (entry.format === 'umd') {
+      (option.output as OutputOptions).name = camelCase(last(packageInfo.packageName.split('/')));
+    }*/
+
+      (option.plugins as Array<any>).push(
+        rollupTypescript({
+          tsconfig: join(packageInfo.fullPath, config.tsconfig ?? 'tsconfig.json'),
+          tsconfigOverride: {
+            ...(config.tsconfigOverride ?? {}),
+          },
+        })
+      );
+    }
+  if (config.enableJsonPlugin) {
+    (option.plugins as Array<any>).push(json());
+  }
+
+  if (config.buble) {
+    (option.plugins as Array<any>).push(buble(option.buble));
+  }
+
+  if (config.enableJsonPlugin || config.extensions) {
+    (option.plugins as Array<any>).push(
+      resolve.nodeResolve({
+        preferBuiltins: false,
+        extends: config.extensions ?? ['.ts', '.tsx', '.js', '.mjs'],
+      })
+    );
+  }
+
+  if (config.replace) {
+    // (option.plugins as Array<any>).push(replace(isFunction(config.replace) ? config.replace(entry, pkg) : option.replace));
+  }
+
+  if (config.enableJsonPlugin || config.commonjs) {
+    (option.plugins as Array<any>).push(
+      commonjs({
+        transformMixedEsModules: true,
+        extensions: ['.ts', '.tsx', '.js'],
+        ...(config.commonjs ?? {}),
+      })
+    );
+  }
+
+  if (entry.minify) {
+    config.plugins?.push(
+      terser.terser({
+        module: entry.format === 'es',
+      })
+    );
+  }
+
+  /*if (isLast) {
+    const copyOptions: any[] = [
+      {
+        src: join(pkg.fullPath, 'package.json'),
+        dest: generateOutputPackagePath('', pkg, option),
+        transform: (contents: string, filename: string) => {
+          const pkgConfig = JSON.parse(contents.toString());
+          const override = mapValues(generatePackageEntries(entries), (p) => {
+            return join(option.outLibrary!, p);
+          });
+          if (option.ts) {
+            const umd = entries.find((it) => it.format === 'umd' && it.env === 'development');
+            if (umd) {
+              override.types = join(option.outLibrary!, umd.file).replace('.js', '.d.ts');
+            }
+          }
+
+          return JSON.stringify(
+            option.handleCopyPackageJson!({
+              ...pkgConfig,
+              ...override,
+            }),
+            null,
+            2
+          );
+        },
+      },
+    ];
+    const readMe = ['README.md', 'readme.md'].find((f) => isFile(join(pkg.fullPath, f)));
+    if (readMe) {
+      copyOptions.push({
+        src: join(pkg.fullPath, readMe),
+        dest: generateOutputPackagePath('', pkg, option),
+      });
+    }
+    config.plugins?.push(
+      copy({
+        targets: copyOptions,
+      })
+    );
+  }*/
+
+  /*if (option.handleConfig) {
+    return option.handleConfig(config, pkg);
+  }*/
 
   result.push(option);
 

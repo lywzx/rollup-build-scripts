@@ -184,6 +184,7 @@ export async function clearPackageOutPackageDts(packages: IPackageConfig[], opti
       const d = [
         join(process.cwd(), generateOutputPackagePath('**/*.d.ts', pkg, option)),
         `!${join(process.cwd(), generateOutputPackagePath(pkgContent.types, pkg, option))}`,
+        ...option.copyFiles.map(f => `!${join(process.cwd(), generateOutputPackagePath(f, pkg, option))}`),
       ];
       return del(d, {force: true});
     }

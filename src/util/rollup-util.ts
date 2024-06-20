@@ -199,13 +199,14 @@ export function generateRollupConfig(
         },
       },
     ];
-    const readMe = [...(option.copyFiles || []) ,'README.md', 'readme.md'].find((f) => isFile(join(pkg.fullPath, f)));
-    if (readMe) {
-      copyOptions.push({
-        src: join(pkg.fullPath, readMe),
-        dest: generateOutputPackagePath('', pkg, option),
-      });
-    }
+    [...(option.copyFiles || []) ,'README.md', 'readme.md'].forEach(f => {
+      if (isFile(join(pkg.fullPath, f))) {
+        copyOptions.push({
+          src: join(pkg.fullPath, f),
+          dest: generateOutputPackagePath('', pkg, option),
+        });
+      }
+    })
     config.plugins?.push(
       copy({
         targets: copyOptions,

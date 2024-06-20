@@ -75,6 +75,7 @@ export function loadRollupConfig(file = '.rollup.config.js'): IRollupConfig {
     externalEachOther: config.externalEachOther ?? false,
     external: config.external ?? {},
     outputGlobals: config.outputGlobals ?? {},
+    copyFiles: config.copyFiles ?? [],
     /**
      * 处理输入的package.json文件
      * @param input

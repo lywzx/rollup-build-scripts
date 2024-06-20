@@ -199,7 +199,7 @@ export function generateRollupConfig(
         },
       },
     ];
-    const readMe = ['README.md', 'readme.md'].find((f) => isFile(join(pkg.fullPath, f)));
+    const readMe = [...(option.copyFiles || []) ,'README.md', 'readme.md'].find((f) => isFile(join(pkg.fullPath, f)));
     if (readMe) {
       copyOptions.push({
         src: join(pkg.fullPath, readMe),

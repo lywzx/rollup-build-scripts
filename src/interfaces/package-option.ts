@@ -137,6 +137,11 @@ export interface IRollupConfig {
     | ((input: IEntryOption, pkg: IPackageConfig) => boolean);
 
   /**
+   * 需要直接复制的文件
+   */
+  copyFiles: string[];
+
+  /**
    * 处理文件复制package.json文件复制，修改内容
    * @param pkg
    */
